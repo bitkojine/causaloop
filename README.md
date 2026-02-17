@@ -1,144 +1,126 @@
-# Causaloop
+<div align="center">
+  <img src="logo.png" width="160" height="160" alt="Causaloop Logo">
+  <h1>Causaloop</h1>
+  <p><strong>A production-grade TypeScript monorepo template for deterministic, effect-safe MVU applications.</strong></p>
 
-A production-grade TypeScript monorepo template focused on a strict **Model-View-Update (MVU)** architecture with deterministic replayability.
+[![CI](https://github.com/bitkojine/causaloop/actions/workflows/ci.yml/badge.svg)](https://github.com/bitkojine/causaloop/actions/workflows/ci.yml)
+[![E2E Tests](https://github.com/bitkojine/causaloop/actions/workflows/e2e.yml/badge.svg)](https://github.com/bitkojine/causaloop/actions/workflows/e2e.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.7+-blue.svg)](https://www.typescriptlang.org/)
 
-## Core Philosophy
+</div>
 
-Causaloop is built on the belief that application state should be predictable, side effects should be managed as data, and debugging should be a matter of replaying logs. It enforces a strict separation between the pure "business logic" and the impure "effect runners".
+---
 
-### Key Architectural Invariants
+## 🧐 Why Causaloop?
 
-- **Single-Writer View-State**: Only the Dispatcher can update the application state.
-- **Effects as Data**: Side effects (Fetch, Timer, Workers) are returned as data structures, not executed inside logic.
-- **Serialized Dispatching**: Messages are processed sequentially to prevent race conditions.
-- **Immutable Snapshots**: State is deep-frozen in development to catch accidental mutations.
-- **Deterministic Replay**: The entire application state can be reconstructed from a message log and an initial model.
+In modern web development, managing state and side effects often leads to "spaghetti code" that is hard to test and impossible to reproduce. **Causaloop** solves this by strictly enforcing **The Elm Architecture (TEA)** principles in TypeScript.
 
-## Monorepo Structure
+It’s built on the belief that:
 
-The project uses `pnpm` workspaces and TypeScript project references:
+- 🎯 **State should be predictable**: Managed by a single, authoritative dispatcher.
+- 📦 **Effects should be data**: Side effects (Fetch, Timer, Workers) are pure data structures until the final execution boundary.
+- 📼 **Bugs should be replayable**: Any UI state can be reconstructed exactly from a message log.
 
-- **`packages/core`**: The runtime-agnostic MVU engine. Includes the Dispatcher, Replay logic, and core type definitions.
-- **`packages/platform-browser`**: Browser-specific effect runners for Fetch, Timers, Animation Frames, and Web Workers.
-- **`packages/app-web`**: A comprehensive demo application showcasing:
-  - Stale-response-safe search.
-  - Request cancellation (Fetch).
-  - High-frequency animation via Virtual DOM.
-  - Offloaded background computation (Web Workers).
-  - DevTools for log export and deterministic replay.
-  - Isolated E2E testing.
+---
 
-## Features & Implementation
+## ✨ Key Features
 
-### Stale-Response-Safe Search
+- **⚡ Virtual DOM Rendering**: High-performance UI reconciliation using Snabbdom.
+- **🛡️ 100% Type Safety**: Zero `any` types across the entire monorepo, strictly enforced in CI.
+- **🧪 Deterministic Replay**: Export message logs to reproduce and debug production issues locally.
+- **🏗️ Monorepo First**: Powered by `pnpm` workspaces and TypeScript Project References.
+- **🎭 Modern E2E Suite**: Comprehensive Playwright coverage running in dedicated CI workflows.
+- **⚙️ Effect Isolation**: Pure logic in `@causaloop/core`, platform-specific runners in `@causaloop/platform-browser`.
 
-Uses `requestId` correlation to ensure that if multiple search requests are in flight, only the response corresponding to the _latest_ request updates the UI state.
+---
 
-### Virtual DOM (VDOM) Rendering
-
-Causaloop uses **Snabbdom** for declarative UI reconciliation. Instead of manual DOM manipulation, the `view` layer returns a lightweight `VNode` tree. The `Renderer` then efficiently patches the real DOM to match this virtual state. This ensures DOM nodes remain stable, preserving focus and selection while offering a modern, declarative developer experience.
-
-### Request Cancellation
-
-Demonstrates the use of `AbortController` via the `FetchEffect`. The demo app allows users to trigger a large data fetch and cancel it mid-flight, restoring the system to an `idle` state deterministically.
-
-### Web Worker Computation
-
-Offloads intensive prime number calculations to a dedicated Web Worker. The transition from `computing` to `done` is handled via message passing, ensuring the UI remains responsive throughout.
-
-### DevTools & Time Travel
-
-The integrated DevTools panel captures every message dispatched in the system. These logs can be exported to JSON and replayed against the initial state to reproduce any UI state exactly.
-
-## Getting Started
+## 🚀 Quick Start
 
 ### Prerequisites
 
-- Node.js >= 20.0.0
-- pnpm
+- [Node.js](https://nodejs.org/) >= 20.0.0
+- [pnpm](https://pnpm.io/) >= 9.0.0
 
 ### Installation
 
 ```bash
-npx pnpm install
+npm install
 ```
 
 ### Development
 
 ```bash
-npx pnpm dev
+npm run dev
 ```
 
-### Testing & Linting
+### Testing & Quality
 
 ```bash
-npm run test            # Runs Vitest for core and app integration
-npm run lint            # Runs ESLint with boundary enforcement
-npm run format          # Formats the codebase with Prettier
-npm run test:e2e        # Runs Playwright E2E suite
+npm run test        # Unit & Integration tests
+npm run test:e2e    # Playwright E2E suite
+npm run lint        # ESLint boundary enforcement
+npm run format      # Prettier formatting
 ```
-
-- **Effect Granularity**: Currently, the `BrowserRunner` handles a standard set of effects. Should we implement a plugin system for third-party effect runners?
-- **Snapshot Persistence**: We have JSON-based log export. Should we implement an automatic "state recovery" from `localStorage` on reload?
-- **Deterministic Randomness**: While `RandomProvider` is implemented in types, how strictly should we enforce it across all features to ensure 100% replay accuracy?
-- **Worker Management**: Currently, the Worker runner terminates the worker after each task. For high-frequency tasks, should we implement a worker pool or persistent workers?
-
-## License
-
-MIT - See [LICENSE](./LICENSE) for details.
 
 ---
 
-## TEA Compliance Audit
+## 📂 Project Structure
 
-This audit evaluates `causaloop` against the baseline principles of **The Elm Architecture (TEA)** to identify alignments, deviations, and architectural risks.
+```text
+.
+├── packages/
+│   ├── core/              # Runtime-agnostic engine (Dispatcher, VNode, Replay)
+│   ├── platform-browser/   # Browser-specific effect runners (Fetch, Timer, RAF)
+│   └── app-web/           # Demo application (Search, Timer, Animation, Workers)
+├── tests/
+│   └── e2e/               # Playwright test suite
+└── .github/workflows/     # CI/CD (Main CI & Separate E2E)
+```
 
-### 1. Confirmed Alignments with TEA
+---
 
-- **Single Model**: The application state is stored in a single, authoritative `currentModel` within the `Dispatcher`.
-- **Message-Driven Transitions**: State changes are triggered exclusively by `Msg` objects. There is no direct setter or multi-authority state logic.
-- **Declarative Effects**: Side effects are returned as data structures (`Effect`) and never executed within the logic layer.
-- **FIFO Message Processing**: The dispatcher uses a message queue and an `isProcessing` lock to ensure serial processing and prevent race conditions or partial state application.
-- **MVU Isolation**: Core business logic is strictly decoupled from platform-specific side effects via package boundaries and ESLint rules.
+## 🧪 TEA Compliance Audit
 
-### 2. Partial Alignments
+Causaloop is continuously audited against **The Elm Architecture (TEA)** baseline.
 
-- **Immutability**: Enforced via `deepFreeze` and `Readonly` types, but primarily active in `devMode`. Production relies on developer discipline rather than runtime enforcement.
-- **Replay Determinism**: A `replay` function exists, but it lacks a mechanism to inject `Time` or `Random` results directly into the `update` function logic, relying instead on timestamps captured in the log.
-- **Provider Injection**: `TimeProvider` and `RandomProvider` are available to the `Dispatcher`, but not currently consumed by the `update` function signature.
+### ✅ Alignments
 
-### 3. Deviations from TEA
+- **Single Model**: Centralized authority in the `Dispatcher`.
+- **Message-Driven**: State transitions only happen via `Msg` objects.
+- **Declarative Effects**: Side effects are data structures, not executions.
+- **FIFO Processing**: Serialized message queue prevents race conditions.
 
-- **Declarative View**: **[RESOLVED]** The application uses Snabbdom for Virtual DOM reconciliation. The `view` function returns a declarative `VNode` tree, which is patched into the DOM.
-- **Logic-Side Effect Wrapping**: Features wrap their own messages in the `update` function.
-  - **Risk**: Manual mapping of effects in `app.ts` adds boilerplate and potential for manual wrapping errors.
-- **No Native Subscriptions**: `causaloop` lacks a formal `subscriptions` system (like Elm's `Sub msg`). RAF and Timers are modeled as one-shot commands that must be re-queued.
+### 🌓 Resolved Deviations
 
-### 4. Structural Weaknesses
+- **Declarative View**: We've transitioned from surgical DOM updates to a proper **Virtual DOM** (Snabbdom) for UI reconciliation.
 
-- **TypeScript Type Gaps**: TypeScript cannot enforce that a `Model` is strictly serializable or free of hidden functions/circular references at compile time.
-- **Developer Restraint**: The system allows developers to access globals (`window`, `localStorage`, `Date.now()`) within the `update` function.
-- **Runtime Validation**: There is no runtime schema validation (e.g., Zod) for incoming messages.
+### 🚧 Structural Integrity
 
-### 5. Determinism Gaps
+- **Boundary Enforcement**: ESLint rules prevent `@causaloop/core` from importing impure platform globals.
+- **Type Rigor**: 100% project-wide type safety with automated "forbidden-comment" checks in CI.
 
-- **Effect Execution Timing**: Effects are executed after the model update but before the next message in the queue.
-- **Implicit Impurity**: The `update` function signature `(model, msg) => UpdateResult` lacks a "context" argument for injected providers.
+---
 
-### 6. Dual-Authority Risks
+## 🛣️ Roadmap
 
-- **DOM state vs Model state**: Because `view` returns live elements, it is possible for a component to hold internal DOM state (e.g., an unmanaged input value).
-  - **Verification**: The comprehensive Playwright E2E suite verifies that the UI state consistently mirrors the intended Model state across complex interactions.
+- [ ] **Snapshot Persistence**: Implement automatic state recovery from `localStorage`.
+- [ ] **Context Injection**: Update the `UpdateFn` signature to explicitly include injected providers (Time, Random).
+- [ ] **Worker Pool**: persistent workers for high-frequency background tasks.
+- [ ] **SSR Support**: Extend `platform-browser` with a Node provider for server-side rendering.
 
-### 7. Enforcement Gaps
+---
 
-- **Model Serializability**: Not enforced by lints or invariants.
-- **Update Purity**: No ESLint rule currently prevents referencing `Date` or `Math.random` inside `packages/core`.
+## 🤝 Contributing
 
-### 8. Recommendations for Hardening
+Contributions are welcome! Please ensure that:
 
-- **Virtual DOM Integration**: Transition the `view` layer to a VNode implementation.
-- **Context Injection**: Update the `UpdateFn` signature to include injected providers.
-- **Strict Serialization Check**: Add a `devMode` invariant that verifies JSON round-tripping.
-- **Sandbox Lints**: Implement ESLint rules to forbid access to browser globals in `packages/core`.
-- **Formal Subscriptions**: Introduce a `subscriptions` function to manage continuous side effects.
+1. All new code is 100% typed (no `any`).
+2. New features include appropriate unit or E2E tests.
+3. Documentation corresponds to code changes.
+
+---
+
+## ⚖️ License
+
+MIT © [Causaloop Contributors](./LICENSE)
