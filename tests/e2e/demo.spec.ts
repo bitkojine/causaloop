@@ -128,10 +128,61 @@ test.describe("Animation Feature", () => {
     await input.fill("1000");
     await computeBtn.click();
     await expect(page.locator("text=Status: computing")).toBeVisible();
+    await expect(computeBtn).toBeDisabled(); // Edge case: button disabled
     await expect(page.locator("text=Status: done")).toBeVisible({
       timeout: 10000,
     });
     await expect(page.locator("text=Result: 168")).toBeVisible();
+    await expect(computeBtn).toBeEnabled(); // Edge case: button re-enabled
+  });
+
+  test("should handle search edge cases", async ({ page }) => {
+    await page.goto("/");
+    const input = page.getByPlaceholder("Search posts...");
+
+    // Empty query
+    await input.fill("");
+    // Ensure no new request is sent or handled gracefully (conceptually)
+    // In this app, it might just search for empty string, but let's verify it doesn't crash
+    await expect(page.locator(".log")).toBeVisible();
+
+    // Special characters
+    await input.fill("?&%");
+    await expect(page.locator("text=Status: loading")).toBeVisible();
+    // API might return empty or specific error, but app shouldn't crash
+    await expect(page.locator("text=Status: success").or(page.locator("text=Status: error"))).toBeVisible({ timeout: 10000 });
+  });
+
+  test("should handle invalid worker input", async ({ page }) => {
+    await page.goto("/");
+    const input = page.locator('input[type="number"]');
+    const computeBtn = page.getByRole("button", { name: "Compute Primes" });
+
+    // Negative number
+    await input.fill("-5");
+    await computeBtn.click();
+    await expect(page.locator("text=Status: done")).toBeVisible();
+    await expect(page.locator("text=Result: 0")).toBeVisible();
+  });
+
+  test("should enforce timer button states", async ({ page }) => {
+    await page.goto("/");
+    const startBtn = page.getByRole("button", { name: "Start Timer" });
+    const stopBtn = page.getByRole("button", { name: "Stop Timer" });
+
+    // Initially
+    await expect(startBtn).toBeEnabled();
+    await expect(stopBtn).toBeDisabled();
+
+    // Running
+    await startBtn.click();
+    await expect(startBtn).toBeDisabled();
+    await expect(stopBtn).toBeEnabled();
+
+    // Stopped
+    await stopBtn.click();
+    await expect(startBtn).toBeEnabled();
+    await expect(stopBtn).toBeDisabled();
   });
 
   test("should work with DevTools replay", async ({ page }) => {
