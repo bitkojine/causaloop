@@ -43,7 +43,11 @@ const renderer = createSnabbdomRenderer<AppModel>(
     ),
 );
 
-const dispatcher = createDispatcher<AppModel, AppMsg, Effect | WrappedEffect<AppMsg>>({
+const dispatcher = createDispatcher<
+  AppModel,
+  AppMsg,
+  Effect | WrappedEffect<AppMsg>
+>({
   model: initialModel,
   update,
   effectRunner: (effect, dispatch) => {
