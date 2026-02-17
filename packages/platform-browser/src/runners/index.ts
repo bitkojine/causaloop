@@ -181,12 +181,37 @@ export class BrowserRunner {
     dispatch: (msg: Msg) => void,
   ): void {
     this.busyWorkers.add(worker);
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
     const cleanup = () => {
+      if (timeoutId) clearTimeout(timeoutId);
       worker.onmessage = null;
       worker.onerror = null;
       this.busyWorkers.delete(worker);
       this.processNextInQueue(effect.scriptUrl);
     };
+    if (effect.timeoutMs) {
+      timeoutId = setTimeout(() => {
+        worker.terminate();
+        this.busyWorkers.delete(worker);
+        const pool = this.workersByUrl.get(effect.scriptUrl);
+        if (pool) {
+          const idx = pool.indexOf(worker);
+          if (idx !== -1) {
+            pool[idx] = this.createWorker(effect.scriptUrl);
+          }
+        }
+        worker.onmessage = null;
+        worker.onerror = null;
+        dispatch(
+          effect.onError(
+            new Error(
+              `Worker timed out after ${effect.timeoutMs}ms. The computation took too long. Try a smaller input.`,
+            ),
+          ),
+        );
+        this.processNextInQueue(effect.scriptUrl);
+      }, effect.timeoutMs);
+    }
     worker.onmessage = (e: MessageEvent) => {
       dispatch(effect.onSuccess(e.data));
       cleanup();

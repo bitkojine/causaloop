@@ -79,6 +79,18 @@ if (savedLogStr) {
       update,
       log,
     });
+
+    if (restoredModel.worker.status === "computing") {
+      restoredModel = {
+        ...restoredModel,
+        worker: {
+          ...restoredModel.worker,
+          status: "idle",
+          error: null,
+        },
+      };
+    }
+
     initialLog = log;
     console.info("[STORAGE] Session restored successfully.");
   } catch (e) {
