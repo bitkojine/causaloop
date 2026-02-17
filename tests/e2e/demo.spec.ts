@@ -115,6 +115,7 @@ test.describe("Animation Feature", () => {
     await page.route("**/photos", (route) => route.abort("failed"));
 
     const startBtn = page.getByRole("button", { name: "Load Big Data" });
+    await startBtn.scrollIntoViewIfNeeded();
     await startBtn.click();
 
     await expect(page.locator("text=Status: error")).toBeVisible();
