@@ -72,7 +72,13 @@ npx pnpm lint  # Runs ESLint with boundary enforcement
 
 MIT - See [LICENSE](./LICENSE) for details.
 
-# TEA Compliance Audit
+### Surgical Updates
+
+In the absence of a Virtual DOM, Causaloop uses a "Surgical Update" pattern for high-frequency state changes (e.g., animations, timers). Instead of nuking and rebuilding the entire component's DOM on every state change, the rendering loop identifies specific elements and updates only the necessary properties (like `style.transform` or `innerText`). This ensures DOM nodes remain stable, preserving focus, selection, and allowing reliable user interaction even during rapid state transitions.
+
+---
+
+## TEA Compliance Audit
 
 This audit evaluates `causaloop` against the baseline principles of **The Elm Architecture (TEA)** to identify alignments, deviations, and architectural risks.
 

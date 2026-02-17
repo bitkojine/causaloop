@@ -72,6 +72,7 @@ export function view<M extends Model>(
     btnGroup.className = 'btn-group';
 
     const exportBtn = document.createElement('button');
+    exportBtn.className = 'export-btn';
     exportBtn.innerText = 'Export Log';
     exportBtn.onclick = () => {
         const data = JSON.stringify(msgLog);
@@ -85,6 +86,7 @@ export function view<M extends Model>(
     btnGroup.appendChild(exportBtn);
 
     const replayBtn = document.createElement('button');
+    replayBtn.className = 'replay-btn';
     replayBtn.innerText = 'Replay Log';
     replayBtn.onclick = () => onReplay([...msgLog], currentModel);
     btnGroup.appendChild(replayBtn);
@@ -93,6 +95,7 @@ export function view<M extends Model>(
 
     if (snapshot.lastReplayResult) {
         const resultPara = document.createElement('p');
+        resultPara.className = 'replay-result';
         resultPara.innerText = `Replay result: ${snapshot.lastReplayResult}`;
         container.appendChild(resultPara);
     }

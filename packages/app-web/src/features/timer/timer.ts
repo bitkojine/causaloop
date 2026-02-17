@@ -53,12 +53,14 @@ export function view(snapshot: Snapshot<TimerModel>, dispatch: (msg: TimerMsg) =
     btnContainer.className = 'btn-group';
 
     const startBtn = document.createElement('button');
+    startBtn.className = 'start-btn';
     startBtn.innerText = 'Start Timer';
     startBtn.onclick = () => dispatch({ kind: 'timer_started' });
     startBtn.disabled = snapshot.isRunning;
     btnContainer.appendChild(startBtn);
 
     const stopBtn = document.createElement('button');
+    stopBtn.className = 'stop-btn';
     stopBtn.innerText = 'Stop Timer';
     stopBtn.onclick = () => dispatch({ kind: 'timer_stopped' });
     stopBtn.disabled = !snapshot.isRunning;

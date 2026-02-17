@@ -12,6 +12,9 @@ export default tseslint.config(
             'vitest.config.ts',
             'eslint.config.js',
             '**/vite.config.ts',
+            'playwright.config.ts',
+            'tests/e2e/*.spec.ts',
+            'packages/app-web/vitest.config.ts',
             '**/*.worker.ts',
             '**/integration.test.ts'
         ],

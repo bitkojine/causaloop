@@ -46,6 +46,7 @@ export function view(snapshot: Snapshot<AnimationModel>, dispatch: (msg: Animati
     container.appendChild(h3);
 
     const box = document.createElement('div');
+    box.className = 'animation-box';
     box.style.width = '50px';
     box.style.height = '50px';
     box.style.background = '#007aff';
@@ -57,12 +58,14 @@ export function view(snapshot: Snapshot<AnimationModel>, dispatch: (msg: Animati
     btnContainer.className = 'btn-group';
 
     const startBtn = document.createElement('button');
+    startBtn.className = 'start-btn';
     startBtn.innerText = 'Start Animation';
     startBtn.onclick = () => dispatch({ kind: 'animation_started' });
     startBtn.disabled = snapshot.isRunning;
     btnContainer.appendChild(startBtn);
 
     const stopBtn = document.createElement('button');
+    stopBtn.className = 'stop-btn';
     stopBtn.innerText = 'Stop Animation';
     stopBtn.onclick = () => dispatch({ kind: 'animation_stopped' });
     stopBtn.disabled = !snapshot.isRunning;
