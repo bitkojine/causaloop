@@ -141,7 +141,7 @@ export function view<M extends Model>(
           class: { "replay-btn": true },
           on: { click: () => onReplay([...msgLog], currentModel) },
         },
-        ["Replay Current"],
+        ["Replay Log"],
       ),
       h(
         "button",

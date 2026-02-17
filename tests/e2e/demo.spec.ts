@@ -103,6 +103,12 @@ test.describe("Animation Feature", () => {
     const startBtn = page.getByRole("button", { name: "Load Big Data" });
     const cancelBtn = page.getByRole("button", { name: "Cancel" });
 
+    // Mock network delay to ensure it doesn't finish too fast
+    await page.route("**/photos", async (route) => {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await route.continue();
+    });
+
     await startBtn.click();
     await expect(page.locator("text=Status: loading")).toBeVisible();
     await cancelBtn.click();
