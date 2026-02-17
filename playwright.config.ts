@@ -21,5 +21,8 @@ export default defineConfig({
     command: "npx pnpm --filter @causaloop/app-web dev",
     url: "http://localhost:5173",
     reuseExistingServer: !process.env.CI,
+    timeout: 120000, // 2 minutes
+    stdout: "pipe",
+    stderr: "pipe",
   },
 });

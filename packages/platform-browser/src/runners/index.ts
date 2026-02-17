@@ -34,7 +34,10 @@ export class BrowserRunner {
     }
   }
 
-  private runWrapper(effect: WrappedEffect, dispatch: (msg: Msg) => void): void {
+  private runWrapper(
+    effect: WrappedEffect,
+    dispatch: (msg: Msg) => void,
+  ): void {
     this.run(effect.original, (msg: unknown) => {
       // The inner effect produces a Msg (or unknown that is a Msg)
       // The wrapper converts it to TMsg (which is a Msg)
