@@ -71,7 +71,7 @@ export function createDispatcher<
     if (pendingNotify || isShutdown) return;
     pendingNotify = true;
 
-    Promise.resolve().then(() => {
+    void Promise.resolve().then(() => {
       if (isShutdown) return;
       pendingNotify = false;
 

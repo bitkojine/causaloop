@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { createDispatcher } from "./dispatcher.js";
-import { Model, Effect, UpdateResult } from "./types.js";
+import { Model, Effect, UpdateResult, UpdateFn } from "./types.js";
 
 describe("Dispatcher", () => {
   interface TestModel extends Model {
@@ -102,15 +102,15 @@ describe("Dispatcher", () => {
 
     const dispatcher = createDispatcher<TestModel, TestMsg, Effect>({
       model: { count: 0, history: [] },
-      update: update as any,
+      update: update as UpdateFn<TestModel, TestMsg, Effect>,
       effectRunner: () => {},
       onCommit,
     });
 
     // Dispatch 3 messages synchronously
-    dispatcher.dispatch({ kind: "increment" } as any);
-    dispatcher.dispatch({ kind: "increment" } as any);
-    dispatcher.dispatch({ kind: "increment" } as any);
+    dispatcher.dispatch({ kind: "increment" } as TestMsg);
+    dispatcher.dispatch({ kind: "increment" } as TestMsg);
+    dispatcher.dispatch({ kind: "increment" } as TestMsg);
 
     // Synchronously, onCommit shouldn't have been called yet because it's deferred
     expect(onCommit).toHaveBeenCalledTimes(0);
