@@ -20,12 +20,13 @@ We prioritize **determinism** and **speed**.
 
 ### Unit Tests (Vitest)
 
-| Target                | Type       | Classification | Notes                                                                                                                         | Location                                               |
-| :-------------------- | :--------- | :------------- | :---------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------- |
-| **`fetch`**           | `vi.fn()`  | **DI**         | Injected via `BrowserRunnerOptions`. Completely isolated from global scope.                                                   | `packages/platform-browser/src/stress/effects.test.ts` |
-| **`Worker`**          | `vi.fn()`  | **DI**         | Injected via `BrowserRunnerOptions` (factory function). Isolated from global scope.                                           | `packages/platform-browser/src/stress/effects.test.ts` |
-| **`AbortController`** | `vi.spyOn` | **DI**         | Injected via `BrowserRunnerOptions` (factory function). We spy on the created instances, avoiding global prototype pollution. | `packages/platform-browser/src/stress/effects.test.ts` |
-| **`Dispatch`**        | `vi.fn()`  | **Mandatory**  | Accurately reflects the architectural boundary (Output Port). Capturing messages is the "correct" way to test TEA effects.    | Various `*.test.ts` files                              |
+| Target                | Type       | Classification | Notes                                                                                                                                                              | Location                                               |
+| :-------------------- | :--------- | :------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------- |
+| **`fetch`**           | `vi.fn()`  | **DI**         | Injected via `BrowserRunnerOptions`. Completely isolated from global scope. Used to verify auto-cancellation and race resistance.                                  | `packages/platform-browser/src/stress/effects.test.ts` |
+| **`Worker`**          | `vi.fn()`  | **DI**         | Custom Fake: Overrides `postMessage` to simulate delay/crash and handles `onmessage`/`onerror` listeners. Used to verify Worker Pool reuse and task queuing logic. | `packages/platform-browser/src/stress/effects.test.ts` |
+| **`AbortController`** | `vi.spyOn` | **DI**         | Injected via factory function. We spy on the created instances to verify that `.abort()` is called during Fetch auto-cancellation or explicit Cancel effects.      | `packages/platform-browser/src/stress/effects.test.ts` |
+| **`Dispatch`**        | `vi.fn()`  | **Mandatory**  | Architectural Boundary (Output Port). Capturing messages is the only way to verify that effects correctly translate side-effect results back into the MVU cycle.   | Various `*.test.ts` files                              |
+| **`vnode.h`**         | `h()`      | **DI**         | Snabbdom virtual node factory. Injected into the renderer to allow assertions on the generated view tree without a full DOM environment.                           | `packages/platform-browser/src/renderer.ts`            |
 
 ### E2E Tests (Playwright)
 
