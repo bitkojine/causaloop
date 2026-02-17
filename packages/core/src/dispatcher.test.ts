@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { createDispatcher } from "./dispatcher.js";
 import { Model, Effect, UpdateResult } from "./types.js";
 
@@ -91,5 +91,35 @@ describe("Dispatcher", () => {
     expect(() => {
       snapshot.count = 10;
     }).toThrow();
+  });
+
+  it("should throttle notifications (batch updates)", async () => {
+    const onCommit = vi.fn();
+    const update = (model: TestModel): UpdateResult<TestModel> => ({
+      model: { ...model, count: model.count + 1 },
+      effects: [],
+    });
+
+    const dispatcher = createDispatcher<TestModel, TestMsg, Effect>({
+      model: { count: 0, history: [] },
+      update: update as any,
+      effectRunner: () => {},
+      onCommit,
+    });
+
+    // Dispatch 3 messages synchronously
+    dispatcher.dispatch({ kind: "increment" } as any);
+    dispatcher.dispatch({ kind: "increment" } as any);
+    dispatcher.dispatch({ kind: "increment" } as any);
+
+    // Synchronously, onCommit shouldn't have been called yet because it's deferred
+    expect(onCommit).toHaveBeenCalledTimes(0);
+
+    // Wait for microtask
+    await Promise.resolve();
+
+    // Should have been called exactly once for the batch
+    expect(onCommit).toHaveBeenCalledTimes(1);
+    expect(dispatcher.getSnapshot().count).toBe(3);
   });
 });

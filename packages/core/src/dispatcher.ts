@@ -43,6 +43,7 @@ export function createDispatcher<
   const msgLog: MsgLogEntry[] = [];
   const subscribers = new Set<(snapshot: Snapshot<M>) => void>();
   let isShutdown = false;
+  let pendingNotify = false;
 
   const time = options.timeProvider || { now: () => Date.now() };
 
@@ -66,6 +67,20 @@ export function createDispatcher<
     deepFreeze(currentModel);
   }
 
+  const notifySubscribers = () => {
+    if (pendingNotify || isShutdown) return;
+    pendingNotify = true;
+
+    Promise.resolve().then(() => {
+      if (isShutdown) return;
+      pendingNotify = false;
+
+      const snapshot = currentModel as Snapshot<M>;
+      options.onCommit?.(snapshot);
+      subscribers.forEach((cb) => cb(snapshot));
+    });
+  };
+
   const processQueue = () => {
     if (isProcessing || isShutdown || queue.length === 0) return;
 
@@ -84,16 +99,13 @@ export function createDispatcher<
 
         currentModel = nextModel;
 
-        // Notify subscribers after state commit
-        const snapshot = currentModel as Snapshot<M>;
-        options.onCommit?.(snapshot);
-        subscribers.forEach((cb) => cb(snapshot));
-
-        // Dispatch effects
+        // Dispatch effects immediately
         effects.forEach((effect) => {
           options.effectRunner(effect, dispatch);
         });
       }
+      // Notify once after the entire batch is processed
+      notifySubscribers();
     } finally {
       isProcessing = false;
     }

@@ -143,6 +143,26 @@ export function view<M extends Model>(
         },
         ["Replay Current"],
       ),
+      h(
+        "button",
+        {
+          class: { "restore-btn": true },
+          on: {
+            click: () => {
+              const saved = localStorage.getItem("causaloop_log_v1");
+              if (saved) {
+                try {
+                  const log = JSON.parse(saved);
+                  onReplay(log, currentModel);
+                } catch (e) {
+                  console.error("Failed to restore", e);
+                }
+              }
+            },
+          },
+        },
+        ["Restore Session"],
+      ),
     ]),
     snapshot.lastReplayResult
       ? h("p", { class: { "replay-result": true } }, [
