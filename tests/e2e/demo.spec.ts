@@ -122,7 +122,9 @@ test.describe("Animation Feature", () => {
 
   test("should compute primes in worker", async ({ page }) => {
     await page.goto("/");
-    const input = page.locator('input[type="number"]');
+    const input = page.locator(
+      '.feature-container:has-text("Feature E: Worker Compute") input[type="number"]',
+    );
     const computeBtn = page.getByRole("button", { name: "Compute Primes" });
 
     await input.fill("1000");
@@ -159,7 +161,9 @@ test.describe("Animation Feature", () => {
 
   test("should handle invalid worker input", async ({ page }) => {
     await page.goto("/");
-    const input = page.locator('input[type="number"]');
+    const input = page.locator(
+      '.feature-container:has-text("Feature E: Worker Compute") input[type="number"]',
+    );
     const computeBtn = page.getByRole("button", { name: "Compute Primes" });
 
     // Negative number
