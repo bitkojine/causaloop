@@ -159,10 +159,10 @@ describe("Stress: Effects as Data Integrity", () => {
     expect(createdControllers).toHaveLength(2);
 
     // Controller 1 (Fetch A) should be aborted (auto-cancel)
-    expect(createdControllers[0].abort).toHaveBeenCalled();
+    expect(createdControllers[0]?.abort).toHaveBeenCalled();
 
     // Controller 2 (Fetch B) should be aborted (explicit cancel)
-    expect(createdControllers[1].abort).toHaveBeenCalled();
+    expect(createdControllers[1]?.abort).toHaveBeenCalled();
 
     // The first controller is checking for "orphan" status.
     // In a real app, if Fetch A is still pending, it will eventually complete or timeout.
