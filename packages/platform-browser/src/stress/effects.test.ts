@@ -43,13 +43,12 @@ describe("Stress: Effects as Data Integrity", () => {
           setTimeout(() => {
             if (data === "CRASH") {
               if (listeners.onerror) {
-                listeners.onerror(
-                  new ErrorEvent("error", {
-                    message: "CRASHED",
-                    filename: "worker.js",
-                    lineno: 1,
-                  }),
-                );
+                listeners.onerror({
+                  type: "error",
+                  message: "CRASHED",
+                  filename: "worker.js",
+                  lineno: 1,
+                } as ErrorEvent);
               }
             } else if (data === "echo") {
               if (listeners.onmessage)
