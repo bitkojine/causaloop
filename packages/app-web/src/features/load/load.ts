@@ -77,7 +77,12 @@ export function view(
       h(
         "button",
         {
-          props: { disabled: snapshot.status === "loading" },
+          props: {
+            disabled: snapshot.status === "loading",
+          },
+          attrs: {
+            "aria-label": "Load big data from API",
+          },
           on: { click: () => dispatch({ kind: "load_requested" }) },
         },
         ["Load Big Data"],
@@ -85,7 +90,12 @@ export function view(
       h(
         "button",
         {
-          props: { disabled: snapshot.status !== "loading" },
+          props: {
+            disabled: snapshot.status !== "loading",
+          },
+          attrs: {
+            "aria-label": "Cancel loading",
+          },
           on: { click: () => dispatch({ kind: "load_cancelled" }) },
         },
         ["Cancel"],

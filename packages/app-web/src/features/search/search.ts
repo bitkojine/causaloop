@@ -116,6 +116,9 @@ export function view(
         value: snapshot.query,
         placeholder: "Search posts...",
       },
+      attrs: {
+        "aria-label": "Search posts",
+      },
       on: {
         input: (e: Event) =>
           dispatch({

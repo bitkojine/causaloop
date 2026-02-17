@@ -88,12 +88,23 @@ export function view(
   return h("div", { class: { "feature-container": true } }, [
     h("h3", {}, ["Feature E: Worker Compute"]),
     h("input", {
-      props: { type: "number", value: "100000" },
+      props: {
+        type: "number",
+        value: "100000",
+      },
+      attrs: {
+        "aria-label": "Number of primes to compute",
+      },
     }),
     h(
       "button",
       {
-        props: { disabled: snapshot.status === "computing" },
+        props: {
+          disabled: snapshot.status === "computing",
+        },
+        attrs: {
+          "aria-label": "Start prime number computation",
+        },
         on: {
           click: (e: Event) => {
             const input = (

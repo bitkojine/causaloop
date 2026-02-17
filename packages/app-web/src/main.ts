@@ -1,3 +1,5 @@
+import "./style.css";
+import "./styles/a11y.css";
 import {
   createDispatcher,
   replay,
@@ -13,6 +15,38 @@ import {
   createSnabbdomRenderer,
 } from "@causaloop/platform-browser";
 import { initialModel, update, view, AppModel, AppMsg } from "./app.js";
+
+const throttle = (fn: (log: readonly MsgLogEntry[]) => void, wait: number) => {
+  let inThrottle: boolean,
+    lastFn: ReturnType<typeof setTimeout>,
+    lastTime: number;
+  return (log: readonly MsgLogEntry[]) => {
+    if (!inThrottle) {
+      fn(log);
+      lastTime = Date.now();
+      inThrottle = true;
+    } else {
+      clearTimeout(lastFn);
+      lastFn = setTimeout(
+        () => {
+          if (Date.now() - lastTime >= wait) {
+            fn(log);
+            lastTime = Date.now();
+          }
+        },
+        Math.max(wait - (Date.now() - lastTime), 0),
+      );
+    }
+  };
+};
+
+const saveLogThrottled = throttle((log: readonly MsgLogEntry[]) => {
+  if (log.length > 0) {
+    const recentLog = log.slice(-1000);
+    localStorage.setItem("causaloop_log_v1", JSON.stringify(recentLog));
+  }
+}, 1000);
+
 const appRoot = document.getElementById("app")!;
 const runner = new BrowserRunner();
 export const onReplay = (log: MsgLogEntry[], model: Snapshot<AppModel>) => {
@@ -75,10 +109,7 @@ const dispatcher = createDispatcher<
       dispatcher.dispatch(msg as AppMsg),
     );
     const log = dispatcher.getMsgLog();
-    if (log.length > 0) {
-      const recentLog = log.slice(-1000);
-      localStorage.setItem("causaloop_log_v1", JSON.stringify(recentLog));
-    }
+    saveLogThrottled(log);
   },
   devMode: true,
   assertInvariants: (model) => {
