@@ -110,10 +110,11 @@ describe("Stress: Effects as Data Integrity", () => {
   });
 
   it("Fetch: handles abortKey overwrite (Leak detection)", async () => {
-    // If we fire 2 fetches with same abortKey, and then cancel, does it work?
-    // And do we leak controllers?
+    // Verify that using the same abortKey twice cancels the first request
+    // and correctly cleans up controllers.
 
-    mockFetch.mockImplementation(() => new Promise(() => {})); // Never resolves
+
+    mockFetch.mockImplementation(() => new Promise(() => { })); // Never resolves
 
     // 1. Fetch A
     runner.run(
@@ -134,7 +135,8 @@ describe("Stress: Effects as Data Integrity", () => {
       {
         kind: "fetch",
         url: "/api/long",
-        abortKey: "key1", // Overwrites key in map?
+        abortKey: "key1",
+
         requestId: "req-2",
         purpose: "stress",
         onSuccess: () => ({ kind: "OK" }),

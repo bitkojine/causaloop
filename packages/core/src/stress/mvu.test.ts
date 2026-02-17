@@ -114,8 +114,12 @@ describe("Stress: MVU Correctness & Race Resistance", () => {
     });
     dispatcher.dispatch({ kind: "APPEND", value: "C" });
 
-    // The first message "DISPATCH_SYNC" doesn't modify log itself, but triggers B.
-    // Wait, update for "DISPATCH_SYNC" does NOT append "A". So let's trace:
+    // Trace:
+    // 1. Dispatch(DS(B)) -> Queue: [DS(B)]
+    //    - update triggers Effect(Dispatch(B))
+    // 2. Queue processed -> Dispatch(B) queued -> Queue: [B]
+    // 3. Dispatch(C) queued -> Queue: [B, C]
+
     // 1. Dispatch(DS(B))
     //    - update: returns Effect(Dispatch(B))
     //    - effect: calls Dispatch(Append(B)) -> Queue: [Append(B)]
@@ -129,13 +133,9 @@ describe("Stress: MVU Correctness & Race Resistance", () => {
   });
 
   it("handles recursive re-entrancy limit (Stack safety)", () => {
-    // If we have infinite recursion of sync effects, it should blow the stack eventually
-    // UNLESS the dispatcher uses `setImmediate` or similar to break stack.
-    // But `dispatcher.ts` uses a `while` loop.
-    // If Effect calls dispatch, it pushes to queue.
-    // The `while` loop processes it.
-    // This converts Recursion to Iteration! This is a FEATURE.
-    // Let's verify it doesn't crash with 100k recursive depth.
+    // The dispatcher loop converts recursion to iteration by queuing effects.
+    // This allows deep recursion without stack overflow.
+
 
     const recursiveUpdate = (
       model: TestModel,
@@ -173,7 +173,8 @@ describe("Stress: MVU Correctness & Race Resistance", () => {
       msg: TestMsg,
     ): UpdateResult<TestModel, TestEffect> => {
       if (msg.kind === "INC") {
-        model.count++; // NAUGHTY MUTATION
+        model.count++; // Invalid mutation
+
         return { model, effects: [] };
       }
       return { model, effects: [] };

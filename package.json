@@ -10,6 +10,7 @@
     "build": "pnpm -r build",
     "lint": "eslint .",
     "check:forbidden": "./scripts/check-forbidden.sh",
+    "check:comments": "./scripts/check-thinking-comments.sh",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "vitest run",
