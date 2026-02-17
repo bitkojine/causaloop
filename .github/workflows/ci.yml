@@ -26,6 +26,8 @@ jobs:
         run: pnpm install
       - name: Check Formatting
         run: npx prettier --check .
+      - name: Check for Source Comments
+        run: npm run check:comments
       - name: Check for Forbidden Comments
         run: |
           if grep -r "eslint-disable" packages/*/src ; then
