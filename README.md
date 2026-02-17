@@ -12,8 +12,6 @@
 
 ---
 
-<!-- CI_CONCURRENCY_TEST_2 -->
-
 ## 🧐 Why Causaloop?
 
 In modern web development, managing state and side effects often leads to "spaghetti code" that is hard to test and impossible to reproduce. **Causaloop** solves this by strictly enforcing **The Elm Architecture (TEA)** principles in TypeScript.
