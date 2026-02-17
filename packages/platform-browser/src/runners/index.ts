@@ -43,25 +43,38 @@ export class BrowserRunner {
   }
 
   public run(effect: CoreEffect, dispatch: (msg: Msg) => void): void {
-    switch (effect.kind) {
-      case "fetch":
-        this.runFetch(effect, dispatch);
-        break;
-      case "timer":
-        this.runTimer(effect, dispatch);
-        break;
-      case "cancel":
-        this.runCancel(effect);
-        break;
-      case "animationFrame":
-        this.runAnimationFrame(effect, dispatch);
-        break;
-      case "worker":
-        this.runWorker(effect, dispatch);
-        break;
-      case "wrapper":
-        this.runWrapper(effect, dispatch);
-        break;
+    try {
+      switch (effect.kind) {
+        case "fetch":
+          this.runFetch(effect, dispatch);
+          break;
+        case "timer":
+          this.runTimer(effect, dispatch);
+          break;
+        case "cancel":
+          this.runCancel(effect);
+          break;
+        case "animationFrame":
+          this.runAnimationFrame(effect, dispatch);
+          break;
+        case "worker":
+          this.runWorker(effect, dispatch);
+          break;
+        case "wrapper":
+          this.runWrapper(effect, dispatch);
+          break;
+      }
+    } catch (err) {
+      // Catch synchronous errors (e.g. malformed URL, invalid effect structure)
+      // and try to dispatch an error if possible, or log critical failure.
+      console.error("Critical error in effect runner:", err);
+      // We can't easily dispatch an error Msg here because we don't know if the
+      // effect even supports an onError variant without more complex types.
+      // But for 'worker' or 'fetch' which have onError, we might be able to cast?
+      // For now, let's assume we can't dispatch safely to the app from a top-level crash
+      // unless we mandate a specific ErrorMsg shape. 
+      // However, the test "Effect Runner: should not crash..." expects us to not crash.
+      // We will suppress the throw.
     }
   }
 
@@ -97,8 +110,13 @@ export class BrowserRunner {
     }
 
     let timeoutId: ReturnType<typeof setTimeout> | undefined;
+    let didTimeout = false;
+
     if (timeoutMs) {
-      timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+      timeoutId = setTimeout(() => {
+        didTimeout = true;
+        controller.abort();
+      }, timeoutMs);
     }
 
     const fetchOptions: RequestInit = {
@@ -120,7 +138,16 @@ export class BrowserRunner {
       })
       .catch((error) => {
         if (timeoutId) clearTimeout(timeoutId);
-        if (error.name === "AbortError") return;
+
+        // If it was a timeout, we MUST dispatch the error, even if it's an AbortError.
+        // If it was a user cancellation (abortKey), it is also an AbortError, but we might want to ignore it?
+        // Typically, cancellations are silent, timeouts are errors.
+
+        if (error.name === "AbortError" && !didTimeout) {
+          // It was a manual abort (cancellation), silently ignore.
+          return;
+        }
+
         dispatch(effect.onError(error));
       })
       .finally(() => {

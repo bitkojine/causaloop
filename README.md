@@ -78,8 +78,14 @@ We don't just claim stability; we prove it. Causaloop is continuously benchmarke
 ### Quick Setup
 
 ```bash
+# Install dependencies (pnpm is required)
 pnpm install
-pnpm dev
+
+# Build all packages (Required before running tests or dev)
+pnpm run build
+
+# Start the dev server
+pnpm run dev
 ```
 
 ### Quality Suite
