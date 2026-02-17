@@ -74,6 +74,8 @@ describe("Stress: Effects as Data Integrity", () => {
     });
 
     mockDispatch.mockClear();
+    mockCreateWorker.mockClear();
+    vi.clearAllMocks();
     vi.useFakeTimers();
   });
 
@@ -192,6 +194,8 @@ describe("Stress: Effects as Data Integrity", () => {
 
     // Should have dispatched 1000 times
     expect(mockDispatch).toHaveBeenCalledTimes(COUNT);
+    // Should have created only 4 workers (default pool size)
+    expect(mockCreateWorker).toHaveBeenCalledTimes(4);
   });
 
   it("Worker: correctly handles crashes", async () => {
@@ -215,5 +219,80 @@ describe("Stress: Effects as Data Integrity", () => {
         message: expect.stringContaining("Worker error: CRASHED"),
       }),
     );
+  });
+
+  it("Worker Pool: reuses idle workers", async () => {
+    // 1. Run first task
+    runner.run(
+      {
+        kind: "worker",
+        scriptUrl: "worker.js",
+        taskId: "task-1",
+        payload: "echo",
+        onSuccess: () => ({ kind: "OK" }),
+        onError: () => ({ kind: "ERR" }),
+      } as WorkerEffect,
+      mockDispatch,
+    );
+
+    vi.runOnlyPendingTimers();
+    await vi.waitFor(() => expect(mockDispatch).toHaveBeenCalledTimes(1));
+
+    // 2. Run second task
+    runner.run(
+      {
+        kind: "worker",
+        scriptUrl: "worker.js",
+        taskId: "task-2",
+        payload: "echo",
+        onSuccess: () => ({ kind: "OK" }),
+        onError: () => ({ kind: "ERR" }),
+      } as WorkerEffect,
+      mockDispatch,
+    );
+
+    vi.runOnlyPendingTimers();
+    await vi.waitFor(() => expect(mockDispatch).toHaveBeenCalledTimes(2));
+
+    // Total worker creations should be 1 (reuse)
+    expect(mockCreateWorker).toHaveBeenCalledTimes(1);
+  });
+
+  it("Worker Pool: queues tasks when pool is full", async () => {
+    // Create runner with small pool
+    const smallRunner = new BrowserRunner({
+      createWorker: mockCreateWorker,
+      maxWorkersPerUrl: 2,
+    });
+
+    // Fire 3 tasks
+    for (let i = 0; i < 3; i++) {
+      smallRunner.run(
+        {
+          kind: "worker",
+          scriptUrl: "worker.js",
+          taskId: `task-${i}`,
+          payload: "echo",
+          onSuccess: (data: unknown) => ({ kind: "OK", data }),
+          onError: () => ({ kind: "ERR" }),
+        } as WorkerEffect,
+        mockDispatch,
+      );
+    }
+
+    // Should have created only 2 workers
+    expect(mockCreateWorker).toHaveBeenCalledTimes(2);
+
+    // Run timers for first 2 tasks (10ms each in mock)
+    vi.advanceTimersByTime(10);
+    expect(mockDispatch).toHaveBeenCalledTimes(2);
+
+    // Now the 3rd task should have been picked up from queue and scheduled
+    // Its timer is now pending. Advance again.
+    vi.advanceTimersByTime(10);
+    expect(mockDispatch).toHaveBeenCalledTimes(3);
+
+    // Still only 2 worker creations total
+    expect(mockCreateWorker).toHaveBeenCalledTimes(2);
   });
 });

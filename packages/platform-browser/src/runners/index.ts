@@ -22,14 +22,24 @@ export class BrowserRunner {
     options?: WorkerOptions,
   ) => Worker;
   private readonly createAbortController: () => AbortController;
+  private readonly maxWorkersPerUrl: number;
+  private workersByUrl = new Map<string, Worker[]>();
+  private busyWorkers = new Set<Worker>();
+  private workerQueue = new Map<
+    string,
+    { effect: WorkerEffect; dispatch: (msg: Msg) => void }[]
+  >();
 
-  constructor(options: BrowserRunnerOptions = {}) {
+  constructor(
+    options: BrowserRunnerOptions & { maxWorkersPerUrl?: number } = {},
+  ) {
     this.fetch = options.fetch ?? globalThis.fetch.bind(globalThis);
     this.createWorker =
       options.createWorker ??
       ((url, opts) => new Worker(url, { type: "module", ...opts }));
     this.createAbortController =
       options.createAbortController ?? (() => new AbortController());
+    this.maxWorkersPerUrl = options.maxWorkersPerUrl ?? 4;
   }
 
   public run(effect: CoreEffect, dispatch: (msg: Msg) => void): void {
@@ -78,8 +88,7 @@ export class BrowserRunner {
     } = effect;
     const controller = this.createAbortController();
     // If an abortKey is provided, store the controller.
-    // The previous controller for this key (if any) is implicitly replaced.
-    // Cancellation of previous requests with the same key should be handled by a 'cancel' effect.
+    // The previous controller for this key (if any) is explicitly aborted.
     if (effect.abortKey) {
       if (this.controllers.has(effect.abortKey)) {
         this.controllers.get(effect.abortKey)?.abort();
@@ -110,9 +119,6 @@ export class BrowserRunner {
         dispatch(effect.onSuccess(data as unknown));
       })
       .catch((error) => {
-        if (Object.isFrozen(error)) {
-          // Some fetch errors might be frozen? Unlikely but safe.
-        }
         if (timeoutId) clearTimeout(timeoutId);
         if (error.name === "AbortError") return;
         dispatch(effect.onError(error));
@@ -151,17 +157,68 @@ export class BrowserRunner {
   }
 
   private runWorker(effect: WorkerEffect, dispatch: (msg: Msg) => void): void {
-    const worker = this.createWorker(effect.scriptUrl);
+    const { scriptUrl } = effect;
+    let pool = this.workersByUrl.get(scriptUrl);
+    if (!pool) {
+      pool = [];
+      this.workersByUrl.set(scriptUrl, pool);
+    }
+
+    const idleWorker = pool.find((w) => !this.busyWorkers.has(w));
+
+    if (idleWorker) {
+      this.executeOnWorker(idleWorker, effect, dispatch);
+    } else if (pool.length < this.maxWorkersPerUrl) {
+      const newWorker = this.createWorker(scriptUrl);
+      pool.push(newWorker);
+      this.executeOnWorker(newWorker, effect, dispatch);
+    } else {
+      let queue = this.workerQueue.get(scriptUrl);
+      if (!queue) {
+        queue = [];
+        this.workerQueue.set(scriptUrl, queue);
+      }
+      queue.push({ effect, dispatch });
+    }
+  }
+
+  private executeOnWorker(
+    worker: Worker,
+    effect: WorkerEffect,
+    dispatch: (msg: Msg) => void,
+  ): void {
+    this.busyWorkers.add(worker);
+
+    const cleanup = () => {
+      worker.onmessage = null;
+      worker.onerror = null;
+      this.busyWorkers.delete(worker);
+      this.processNextInQueue(effect.scriptUrl);
+    };
+
     worker.onmessage = (e: MessageEvent) => {
       dispatch(effect.onSuccess(e.data));
-      worker.terminate();
+      cleanup();
     };
+
     worker.onerror = (e: ErrorEvent) => {
-      // Capture detailed error info
       const errorMsg = `Worker error: ${e.message} at ${e.filename}:${e.lineno}`;
       dispatch(effect.onError(new Error(errorMsg)));
-      worker.terminate();
+      cleanup();
     };
+
     worker.postMessage(effect.payload);
+  }
+
+  private processNextInQueue(scriptUrl: string): void {
+    const queue = this.workerQueue.get(scriptUrl);
+    if (queue && queue.length > 0) {
+      const pool = this.workersByUrl.get(scriptUrl);
+      const idleWorker = pool?.find((w) => !this.busyWorkers.has(w));
+      if (idleWorker) {
+        const next = queue.shift()!;
+        this.executeOnWorker(idleWorker, next.effect, next.dispatch);
+      }
+    }
   }
 }
