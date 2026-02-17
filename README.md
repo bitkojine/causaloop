@@ -107,7 +107,9 @@ pnpm lint          # ESLint boundary enforcement
 - [x] **Stress Suite**: 1M+ throughput verification.
 - [ ] **Context Injection**: Updates to include explicit `Time` and `Random` providers.
 - [ ] **SSR Support**: Node.js effect runners for server-side rendering.
-- [ ] **Debugger UI**: A visual interface for scrubbing through replayed sessions.
+- [ ] **Worker Validation**: Add `zod` schema validation for worker messages.
+- [ ] **CLI Tool**: `create-causaloop-app` scaffolder for easy setup.
+- [ ] **DevTools**: Visual indicators (timeline/graph) for stalled effects.
 
 ---
 
