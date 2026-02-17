@@ -173,7 +173,6 @@ describe("Stress: MVU Correctness & Race Resistance", () => {
       msg: TestMsg,
     ): UpdateResult<TestModel, TestEffect> => {
       if (msg.kind === "INC") {
-        // @ts-expect-error - Testing devMode check
         model.count++; // NAUGHTY MUTATION
         return { model, effects: [] };
       }

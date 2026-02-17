@@ -3,7 +3,6 @@ import { BrowserRunner } from "../runners/index.js";
 
 // Mock globals
 const mockDispatch = vi.fn();
-// @ts-expect-error - Mocking global fetch
 global.fetch = vi.fn();
 // @ts-expect-error - Mocking Worker
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
