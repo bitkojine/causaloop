@@ -43,13 +43,13 @@ It’s built on the belief that:
 
 ## 📊 Project Maturity
 
-| Feature                  | Status         | Reliability | Notes                                                    |
-| :----------------------- | :------------- | :---------- | :------------------------------------------------------- |
-| **MVU Core**             | `Ready`        | High        | Tested & production-ready.                               |
-| **Snabbdom VDOM**        | `Ready`        | High        | Replaced legacy construction-based rendering.            |
-| **Deterministic Replay** | `Experimental` | Medium      | Works for simple flows; lacks strict provider injection. |
-| **Web Workers**          | `Preview`      | Medium      | Single-worker approach; standard message handling.       |
-| **CI/CD Enforcer**       | `Ready`        | High        | Guards formatting, types, and forbidden comments.        |
+| Feature                  | Status         | Confidence | Notes                                                      |
+| :----------------------- | :------------- | :--------- | :--------------------------------------------------------- |
+| **MVU Core**             | `Ready`        | Moderate   | Solid foundation, requires more complex real-world stress. |
+| **Snabbdom VDOM**        | `Ready`        | Moderate   | Functional integration; E2E coverage is good but nascent.  |
+| **Deterministic Replay** | `Experimental` | Low-Mid    | Proof-of-concept; lacks strict time/random providers.      |
+| **Web Workers**          | `Preview`      | Low        | Basic orchestration; single worker, no error recovery yet. |
+| **CI/CD Enforcer**       | `Ready`        | High       | Static checks are binary and highly reliable.              |
 
 ---
 
