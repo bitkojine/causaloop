@@ -6,27 +6,31 @@ import {
   VNode,
   h,
 } from "@causaloop/core";
-
 export interface DevtoolsModel extends Model {
   readonly isOpen: boolean;
   readonly lastReplayResult: "success" | "failure" | null;
 }
-
 export type DevtoolsMsg =
-  | { kind: "devtools_toggled" }
+  | {
+      kind: "devtools_toggled";
+    }
   | {
       kind: "replay_triggered";
       log: MsgLogEntry[];
       initialModel: Snapshot<Model>;
     }
-  | { kind: "replay_completed"; success: boolean }
-  | { kind: "log_imported"; log: MsgLogEntry[] };
-
+  | {
+      kind: "replay_completed";
+      success: boolean;
+    }
+  | {
+      kind: "log_imported";
+      log: MsgLogEntry[];
+    };
 export const initialModel: DevtoolsModel = {
   isOpen: false,
   lastReplayResult: null,
 };
-
 export function update(
   model: DevtoolsModel,
   msg: DevtoolsMsg,
@@ -40,9 +44,6 @@ export function update(
     case "replay_triggered":
       return { model, effects: [] };
     case "log_imported":
-      // This is a "silent" update to the devtools state if needed,
-      // but usually we want to trigger a replay or just store it.
-      // For now, let's just make it available to the view.
       return { model, effects: [] };
     case "replay_completed":
       return {
@@ -54,7 +55,6 @@ export function update(
       };
   }
 }
-
 export function view<M extends Model>(
   snapshot: Snapshot<DevtoolsModel>,
   msgLog: readonly MsgLogEntry[],
@@ -71,12 +71,10 @@ export function view<M extends Model>(
       ),
     ]);
   }
-
   const logRows = msgLog
     .slice(-10)
     .map((e) => `[${new Date(e.ts).toLocaleTimeString()}] ${e.msg.kind}`)
     .join("\n");
-
   return h("div", { class: { devtools: true } }, [
     h("h3", {}, ["DevTools"]),
     h(
@@ -171,7 +169,6 @@ export function view<M extends Model>(
       : text(""),
   ]);
 }
-
 function text(content: string): VNode {
   return { kind: "text", text: content };
 }

@@ -1,19 +1,25 @@
 import { describe, it, expect } from "vitest";
 import { createDispatcher } from "../dispatcher.js";
 import { UpdateResult } from "../types.js";
-
-// --- Types ---
 type StressModel = {
   count: number;
   lastTs: number;
 };
 type StressMsg =
-  | { kind: "INC"; ts: number }
-  | { kind: "RESET" }
-  | { kind: "BATCH_INC"; amount: number };
-
-type StressEffect = { kind: "NONE" };
-
+  | {
+      kind: "INC";
+      ts: number;
+    }
+  | {
+      kind: "RESET";
+    }
+  | {
+      kind: "BATCH_INC";
+      amount: number;
+    };
+type StressEffect = {
+  kind: "NONE";
+};
 const update = (
   model: StressModel,
   msg: StressMsg,
@@ -40,9 +46,7 @@ const update = (
       };
   }
 };
-
 const effectRunner = () => {};
-
 describe("MVU Core Stress", () => {
   it("processes 1,000,000 messages and measures throughput", () => {
     const dispatcher = createDispatcher<StressModel, StressMsg, StressEffect>({
@@ -50,17 +54,13 @@ describe("MVU Core Stress", () => {
       update,
       effectRunner,
     });
-
-    const COUNT = 1_000_000;
+    const COUNT = 1000000;
     for (let i = 0; i < COUNT; i++) {
-      // Use BATCH_INC with amount 1 for high frequency processing
       dispatcher.dispatch({ kind: "BATCH_INC", amount: 1 });
     }
     expect(dispatcher.getSnapshot().count).toBe(COUNT);
-
     expect(dispatcher.getSnapshot().count).toBe(COUNT);
   });
-
   it("handles rapid concurrent bursts and preserves FIFO", async () => {
     const dispatcher = createDispatcher<StressModel, StressMsg, StressEffect>({
       model: { count: 0, lastTs: 0 },
@@ -76,10 +76,8 @@ describe("MVU Core Stress", () => {
       },
       effectRunner,
     });
-
     const BURST_SIZE = 1000;
     const CONCURRENCY = 10;
-
     const promises = [];
     for (let c = 0; c < CONCURRENCY; c++) {
       promises.push(
@@ -90,16 +88,13 @@ describe("MVU Core Stress", () => {
         })(),
       );
     }
-
     await Promise.all(promises);
     expect(dispatcher.getSnapshot().count).toBe(BURST_SIZE * CONCURRENCY);
   });
-
   it("re-entrancy: verified that dispatch during update results in FIFO queuing", () => {
     let dispatcher: ReturnType<
       typeof createDispatcher<StressModel, StressMsg, StressEffect>
     > | null = null;
-
     const sneakyUpdate = (
       model: StressModel,
       msg: StressMsg,
@@ -115,30 +110,38 @@ describe("MVU Core Stress", () => {
       }
       return { model, effects: [] };
     };
-
     dispatcher = createDispatcher<StressModel, StressMsg, StressEffect>({
       model: { count: 0, lastTs: 0 },
       update: sneakyUpdate,
       effectRunner,
     });
-
     dispatcher.dispatch({ kind: "INC", ts: 1 });
-
-    // Result should be 0 because RESET was queued and processed immediately after INC
     expect(dispatcher.getSnapshot().count).toBe(0);
   });
-
   it("purity: deepFreeze catches mutations in devMode", () => {
     const impureUpdate = (model: {
       count: number;
-    }): UpdateResult<{ count: number }, { kind: "NONE" }> => {
+    }): UpdateResult<
+      {
+        count: number;
+      },
+      {
+        kind: "NONE";
+      }
+    > => {
       model.count++;
       return { model, effects: [] };
     };
     const dispatcher = createDispatcher<
-      { count: number },
-      { kind: string },
-      { kind: "NONE" }
+      {
+        count: number;
+      },
+      {
+        kind: string;
+      },
+      {
+        kind: "NONE";
+      }
     >({
       model: { count: 0 },
       update: impureUpdate,

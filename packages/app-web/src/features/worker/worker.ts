@@ -7,26 +7,33 @@ import {
   h,
 } from "@causaloop/core";
 import workerUrl from "./compute.worker?worker&url";
-
 export interface WorkerModel extends Model {
   readonly result: number | null;
   readonly status: "idle" | "computing" | "done" | "error";
   readonly error: string | null;
   readonly lastTaskId: number;
 }
-
 export type WorkerMsg =
-  | { kind: "compute_requested"; n: number }
-  | { kind: "compute_succeeded"; result: number; taskId: number }
-  | { kind: "compute_failed"; error: Error; taskId: number };
-
+  | {
+      kind: "compute_requested";
+      n: number;
+    }
+  | {
+      kind: "compute_succeeded";
+      result: number;
+      taskId: number;
+    }
+  | {
+      kind: "compute_failed";
+      error: Error;
+      taskId: number;
+    };
 export const initialModel: WorkerModel = {
   result: null,
   status: "idle",
   error: null,
   lastTaskId: 0,
 };
-
 export function update(
   model: WorkerModel,
   msg: WorkerMsg,
@@ -74,7 +81,6 @@ export function update(
       };
   }
 }
-
 export function view(
   snapshot: Snapshot<WorkerModel>,
   dispatch: (msg: WorkerMsg) => void,

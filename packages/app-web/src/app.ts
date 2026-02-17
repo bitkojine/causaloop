@@ -14,7 +14,6 @@ import * as Animation from "./features/animation/animation.js";
 import * as WorkerFeature from "./features/worker/worker.js";
 import * as Devtools from "./features/devtools/devtools.js";
 import * as Stress from "./features/stress/stress.js";
-
 export interface AppModel extends Model {
   readonly search: Search.SearchModel;
   readonly load: Load.LoadModel;
@@ -24,18 +23,36 @@ export interface AppModel extends Model {
   readonly devtools: Devtools.DevtoolsModel;
   readonly stress: Stress.StressModel;
 }
-
 export type AppMsg =
-  | { kind: "search"; msg: Search.SearchMsg }
-  | { kind: "load"; msg: Load.LoadMsg }
-  | { kind: "timer"; msg: Timer.TimerMsg }
-  | { kind: "animation"; msg: Animation.AnimationMsg }
-  | { kind: "worker"; msg: WorkerFeature.WorkerMsg }
-  | { kind: "devtools"; msg: Devtools.DevtoolsMsg }
-  | { kind: "stress"; msg: Stress.StressMsg };
-
+  | {
+      kind: "search";
+      msg: Search.SearchMsg;
+    }
+  | {
+      kind: "load";
+      msg: Load.LoadMsg;
+    }
+  | {
+      kind: "timer";
+      msg: Timer.TimerMsg;
+    }
+  | {
+      kind: "animation";
+      msg: Animation.AnimationMsg;
+    }
+  | {
+      kind: "worker";
+      msg: WorkerFeature.WorkerMsg;
+    }
+  | {
+      kind: "devtools";
+      msg: Devtools.DevtoolsMsg;
+    }
+  | {
+      kind: "stress";
+      msg: Stress.StressMsg;
+    };
 const initialModelTimer = Timer.initialModel;
-
 export const initialModel: AppModel = {
   search: Search.initialModel,
   load: Load.initialModel,
@@ -45,7 +62,6 @@ export const initialModel: AppModel = {
   devtools: Devtools.initialModel,
   stress: Stress.initialModel,
 };
-
 export function update(model: AppModel, msg: AppMsg): UpdateResult<AppModel> {
   switch (msg.kind) {
     case "search": {
@@ -148,7 +164,7 @@ export function update(model: AppModel, msg: AppMsg): UpdateResult<AppModel> {
               {
                 kind: "animationFrame",
                 onFrame: () => ({ kind: "stress", msg: { kind: "shuffle" } }),
-              } as Effect, // Cast to generic Effect to satisfy type checker
+              } as Effect,
             ];
           }
           return [];
@@ -157,7 +173,6 @@ export function update(model: AppModel, msg: AppMsg): UpdateResult<AppModel> {
     }
   }
 }
-
 export function view(
   snapshot: Snapshot<AppModel>,
   msgLog: readonly MsgLogEntry[],
@@ -166,19 +181,19 @@ export function view(
 ): VNode {
   const errorLogs = msgLog.filter((entry) => {
     const m = entry.msg;
-    // Check if it's a wrapped message (AppMsg) with an error
     if ("msg" in m && typeof m.msg === "object" && m.msg !== null) {
-      const inner = m.msg as { kind?: string; error?: unknown };
+      const inner = m.msg as {
+        kind?: string;
+        error?: unknown;
+      };
       return (
         inner.kind?.endsWith("_failed") ||
         inner.kind === "compute_failed" ||
         !!inner.error
       );
     }
-    // Fallback for top-level errors
     return m.kind.endsWith("_failed") || ("error" in m && !!m.error);
   });
-
   return h("div", {}, [
     Search.view(snapshot.search, (m) => dispatch({ kind: "search", msg: m })),
     Load.view(snapshot.load, (m) => dispatch({ kind: "load", msg: m })),
@@ -204,23 +219,26 @@ export function view(
               const m = entry.msg;
               let kind = m.kind;
               let error: unknown = "Unknown error";
-
-              // Unwrap logic for display
               if ("msg" in m && typeof m.msg === "object" && m.msg !== null) {
-                const inner = m.msg as { kind: string; error?: unknown };
+                const inner = m.msg as {
+                  kind: string;
+                  error?: unknown;
+                };
                 kind = `${m.kind}/${inner.kind}`;
                 if (inner.error) error = inner.error;
               } else if ("error" in m) {
-                error = (m as { error: unknown }).error;
+                error = (
+                  m as {
+                    error: unknown;
+                  }
+                ).error;
               }
-
               const errorMessage =
                 error instanceof Error
                   ? error.message
                   : typeof error === "string"
                     ? error
                     : JSON.stringify(error);
-
               return h("li", { class: { "log-error": true } }, [
                 `${new Date(entry.ts).toLocaleTimeString()} - ${kind}: ${errorMessage}`,
               ]);

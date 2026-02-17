@@ -13,10 +13,8 @@ import {
   createSnabbdomRenderer,
 } from "@causaloop/platform-browser";
 import { initialModel, update, view, AppModel, AppMsg } from "./app.js";
-
 const appRoot = document.getElementById("app")!;
 const runner = new BrowserRunner();
-
 export const onReplay = (log: MsgLogEntry[], model: Snapshot<AppModel>) => {
   const finalSnapshot = replay({
     initialModel: model,
@@ -31,8 +29,6 @@ export const onReplay = (log: MsgLogEntry[], model: Snapshot<AppModel>) => {
     msg: { kind: "replay_completed", success: isMatched },
   });
 };
-
-// Check for existing session
 const savedLogStr = localStorage.getItem("causaloop_log_v1");
 if (savedLogStr) {
   try {
@@ -42,7 +38,6 @@ if (savedLogStr) {
     console.error("[STORAGE] Failed to parse saved log", e);
   }
 }
-
 const renderer = createSnabbdomRenderer<AppModel>(
   appRoot,
   (snapshot: AppModel, dispatch: (msg: unknown) => void) =>
@@ -53,7 +48,6 @@ const renderer = createSnabbdomRenderer<AppModel>(
       onReplay,
     ),
 );
-
 const dispatcher = createDispatcher<
   AppModel,
   AppMsg,
@@ -80,11 +74,8 @@ const dispatcher = createDispatcher<
     renderer.render(snapshot, (msg: unknown) =>
       dispatcher.dispatch(msg as AppMsg),
     );
-
-    // Auto-save log for persistence (Section C)
     const log = dispatcher.getMsgLog();
     if (log.length > 0) {
-      // Limit to last 1000 messages to prevent LocalStorage bloat
       const recentLog = log.slice(-1000);
       localStorage.setItem("causaloop_log_v1", JSON.stringify(recentLog));
     }
@@ -95,8 +86,6 @@ const dispatcher = createDispatcher<
       throw new Error("Invariant failed");
   },
 });
-
-// Initial render
 renderer.render(dispatcher.getSnapshot(), (msg: unknown) =>
   dispatcher.dispatch(msg as AppMsg),
 );

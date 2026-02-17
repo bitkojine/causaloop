@@ -78,8 +78,14 @@ We don't just claim stability; we prove it. Causaloop is continuously benchmarke
 ### Quick Setup
 
 ```bash
+# Install dependencies (pnpm is required)
 pnpm install
-pnpm dev
+
+# Build all packages (Required before running tests or dev)
+pnpm run build
+
+# Start the dev server
+pnpm run dev
 ```
 
 ### Quality Suite
@@ -101,7 +107,33 @@ pnpm lint          # ESLint boundary enforcement
 - [x] **Stress Suite**: 1M+ throughput verification.
 - [ ] **Context Injection**: Updates to include explicit `Time` and `Random` providers.
 - [ ] **SSR Support**: Node.js effect runners for server-side rendering.
-- [ ] **Debugger UI**: A visual interface for scrubbing through replayed sessions.
+- [ ] **Worker Validation**: Add `zod` schema validation for worker messages.
+- [ ] **CLI Tool**: `create-causaloop-app` scaffolder for easy setup.
+- [ ] **DevTools**: Visual indicators (timeline/graph) for stalled effects.
+
+---
+
+## 🤐 Zero Comment Policy
+
+**This repository enforces a radical "No Comments" rule for all source code.**
+
+The codebase is intended to be purely functional and readable without inline narratives.
+
+### 🛡️ Enforcement
+
+This rule is strictly enforced by both local and remote guardrails:
+
+1.  **Local Pre-Push Hook**: A git hook runs `scripts/check-thinking-comments.sh` before you can push.
+2.  **CI Pipeline**: The GitHub Actions workflow fails if any comments (`//` or `/*`) are detected in `packages/*/src`.
+
+### 🤖 Directive for AI Agents
+
+If you are an AI coding assistant working on this repo, follow these instructions precisely:
+
+- **❌ Low-Value Thoughts**: "I think...", "Maybe...", "TODO:..." -> **Do NOT write these.**
+- **✅ High-Value Insights**: Architectural decisions, complex invariants, or critical "gotchas". -> **Document these in [`docs/notes/ideas.md`](./docs/notes/ideas.md).**
+
+**Do not pollute the source code with your internal monologue.**
 
 ---
 

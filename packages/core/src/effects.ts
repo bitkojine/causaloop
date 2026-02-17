@@ -1,10 +1,8 @@
 import { Effect, Msg } from "./types.js";
-
 export interface MsgTemplate<T = unknown> {
   readonly kind: string;
   readonly payload?: T;
 }
-
 export interface FetchEffect<TMsg extends Msg = Msg> extends Effect {
   readonly kind: "fetch";
   readonly requestId: string;
@@ -19,23 +17,19 @@ export interface FetchEffect<TMsg extends Msg = Msg> extends Effect {
   readonly onSuccess: (data: unknown) => TMsg;
   readonly onError: (error: Error) => TMsg;
 }
-
 export interface TimerEffect<TMsg extends Msg = Msg> extends Effect {
   readonly kind: "timer";
   readonly timeoutMs: number;
   readonly onTimeout: () => TMsg;
 }
-
 export interface CancelEffect extends Effect {
   readonly kind: "cancel";
   readonly abortKey: string;
 }
-
 export interface AnimationFrameEffect<TMsg extends Msg = Msg> extends Effect {
   readonly kind: "animationFrame";
   readonly onFrame: (time: number) => TMsg;
 }
-
 export interface WorkerEffect<TMsg extends Msg = Msg> extends Effect {
   readonly kind: "worker";
   readonly taskId: string;
@@ -44,13 +38,11 @@ export interface WorkerEffect<TMsg extends Msg = Msg> extends Effect {
   readonly onSuccess: (data: unknown) => TMsg;
   readonly onError: (error: Error) => TMsg;
 }
-
 export interface WrappedEffect<TMsg extends Msg = Msg> extends Effect {
   readonly kind: "wrapper";
   readonly original: CoreEffect<Msg>;
   readonly wrap: (msg: unknown) => TMsg;
 }
-
 export type CoreEffect<TMsg extends Msg = Msg> =
   | FetchEffect<TMsg>
   | TimerEffect<TMsg>
