@@ -112,6 +112,7 @@ pnpm lint          # ESLint boundary enforcement
 - [ ] **DevTools**: Visual indicators (timeline/graph) for stalled effects.
 
 ---
+
 ## 🤐 Zero Comment Policy
 
 **This repository enforces a radical "No Comments" rule for all source code.**
@@ -129,13 +130,12 @@ This rule is strictly enforced by both local and remote guardrails:
 
 If you are an AI coding assistant working on this repo, follow these instructions precisely:
 
--   **❌ Low-Value Thoughts**: "I think...", "Maybe...", "TODO:..." -> **Do NOT write these.**
--   **✅ High-Value Insights**: Architectural decisions, complex invariants, or critical "gotchas". -> **Document these in [`docs/notes/ideas.md`](./docs/notes/ideas.md).**
+- **❌ Low-Value Thoughts**: "I think...", "Maybe...", "TODO:..." -> **Do NOT write these.**
+- **✅ High-Value Insights**: Architectural decisions, complex invariants, or critical "gotchas". -> **Document these in [`docs/notes/ideas.md`](./docs/notes/ideas.md).**
 
 **Do not pollute the source code with your internal monologue.**
 
 ---
-
 
 ## 🤝 Contributing
 
