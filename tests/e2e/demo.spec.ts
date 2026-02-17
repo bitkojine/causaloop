@@ -150,7 +150,11 @@ test.describe("Animation Feature", () => {
     await input.fill("?&%");
     await expect(page.locator("text=Status: loading")).toBeVisible();
     // API might return empty or specific error, but app shouldn't crash
-    await expect(page.locator("text=Status: success").or(page.locator("text=Status: error"))).toBeVisible({ timeout: 10000 });
+    await expect(
+      page
+        .locator("text=Status: success")
+        .or(page.locator("text=Status: error")),
+    ).toBeVisible({ timeout: 10000 });
   });
 
   test("should handle invalid worker input", async ({ page }) => {

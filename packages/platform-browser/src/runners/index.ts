@@ -5,6 +5,7 @@ import {
   TimerEffect,
   AnimationFrameEffect,
   WorkerEffect,
+  WrappedEffect,
 } from "@causaloop/core";
 
 export class BrowserRunner {
@@ -27,7 +28,19 @@ export class BrowserRunner {
       case "worker":
         this.runWorker(effect, dispatch);
         break;
+      case "wrapper":
+        this.runWrapper(effect, dispatch);
+        break;
     }
+  }
+
+  private runWrapper(effect: WrappedEffect, dispatch: (msg: Msg) => void): void {
+    this.run(effect.original, (msg: unknown) => {
+      // The inner effect produces a Msg (or unknown that is a Msg)
+      // The wrapper converts it to TMsg (which is a Msg)
+      // The dispatch function expects a Msg
+      dispatch(effect.wrap(msg));
+    });
   }
 
   private runFetch(effect: FetchEffect, dispatch: (msg: Msg) => void): void {
