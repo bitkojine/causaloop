@@ -172,34 +172,34 @@ export function view(
       errorLogs.length === 0
         ? h("p", { class: { "log-empty": true } }, ["No errors logged."])
         : h(
-          "ul",
-          {},
-          errorLogs.slice(-5).map((entry) => {
-            const m = entry.msg;
-            let kind = m.kind;
-            let error: unknown = "Unknown error";
+            "ul",
+            {},
+            errorLogs.slice(-5).map((entry) => {
+              const m = entry.msg;
+              let kind = m.kind;
+              let error: unknown = "Unknown error";
 
-            // Unwrap logic for display
-            if ("msg" in m && typeof m.msg === "object" && m.msg !== null) {
-              const inner = m.msg as { kind: string; error?: unknown };
-              kind = `${m.kind}/${inner.kind}`;
-              if (inner.error) error = inner.error;
-            } else if ("error" in m) {
-              error = (m as { error: unknown }).error;
-            }
+              // Unwrap logic for display
+              if ("msg" in m && typeof m.msg === "object" && m.msg !== null) {
+                const inner = m.msg as { kind: string; error?: unknown };
+                kind = `${m.kind}/${inner.kind}`;
+                if (inner.error) error = inner.error;
+              } else if ("error" in m) {
+                error = (m as { error: unknown }).error;
+              }
 
-            const errorMessage =
-              error instanceof Error
-                ? error.message
-                : typeof error === "string"
-                  ? error
-                  : JSON.stringify(error);
+              const errorMessage =
+                error instanceof Error
+                  ? error.message
+                  : typeof error === "string"
+                    ? error
+                    : JSON.stringify(error);
 
-            return h("li", { class: { "log-error": true } }, [
-              `${new Date(entry.ts).toLocaleTimeString()} - ${kind}: ${errorMessage}`,
-            ]);
-          }),
-        ),
+              return h("li", { class: { "log-error": true } }, [
+                `${new Date(entry.ts).toLocaleTimeString()} - ${kind}: ${errorMessage}`,
+              ]);
+            }),
+          ),
     ]),
   ]);
 }
