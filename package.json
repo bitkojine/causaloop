@@ -13,7 +13,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "vitest run",
-    "test:e2e": "playwright test",
+    "test:e2e": "playwright test tests/e2e",
     "test:stress": "vitest run packages/core/src/stress packages/platform-browser/src/stress && playwright test tests/stress.spec.ts",
     "test:stability": "playwright test tests/stability.spec.ts",
     "dev": "pnpm -r --parallel dev",
