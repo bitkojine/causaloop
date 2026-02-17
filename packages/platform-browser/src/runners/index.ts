@@ -6,6 +6,9 @@ import {
   AnimationFrameEffect,
   WorkerEffect,
   WrappedEffect,
+  Subscription,
+  TimerSubscription,
+  AnimationFrameSubscription,
 } from "@causaloop/core";
 export interface BrowserRunnerOptions {
   fetch?: typeof fetch;
@@ -232,6 +235,48 @@ export class BrowserRunner {
         const next = queue.shift()!;
         this.executeOnWorker(idleWorker, next.effect, next.dispatch);
       }
+    }
+  }
+  private activeSubscriptions = new Map<string, { cancel: () => void }>();
+  public startSubscription(
+    sub: Subscription,
+    dispatch: (msg: Msg) => void,
+  ): void {
+    this.stopSubscription(sub.key);
+    switch (sub.kind) {
+      case "timer": {
+        const timerSub = sub as TimerSubscription;
+        const id = setInterval(() => {
+          dispatch(timerSub.onTick());
+        }, timerSub.intervalMs);
+        this.activeSubscriptions.set(sub.key, {
+          cancel: () => clearInterval(id),
+        });
+        break;
+      }
+      case "animationFrame": {
+        const animSub = sub as AnimationFrameSubscription;
+        let active = true;
+        const loop = (time: number) => {
+          if (!active) return;
+          dispatch(animSub.onFrame(time));
+          requestAnimationFrame(loop);
+        };
+        requestAnimationFrame(loop);
+        this.activeSubscriptions.set(sub.key, {
+          cancel: () => {
+            active = false;
+          },
+        });
+        break;
+      }
+    }
+  }
+  public stopSubscription(key: string): void {
+    const entry = this.activeSubscriptions.get(key);
+    if (entry) {
+      entry.cancel();
+      this.activeSubscriptions.delete(key);
     }
   }
 }

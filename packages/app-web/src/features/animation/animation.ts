@@ -2,7 +2,8 @@ import {
   Model,
   UpdateResult,
   Snapshot,
-  AnimationFrameEffect,
+  AnimationFrameSubscription,
+  Subscription,
   VNode,
   h,
 } from "@causaloop/core";
@@ -34,23 +35,13 @@ export function update(
       if (model.isRunning) return { model, effects: [] };
       return {
         model: { ...model, isRunning: true },
-        effects: [
-          {
-            kind: "animationFrame",
-            onFrame: (t: number) => ({ kind: "animation_frame", time: t }),
-          } as AnimationFrameEffect<AnimationMsg>,
-        ],
+        effects: [],
       };
     case "animation_frame":
       if (!model.isRunning) return { model, effects: [] };
       return {
         model: { ...model, angle: model.angle + 0.1 },
-        effects: [
-          {
-            kind: "animationFrame",
-            onFrame: (t: number) => ({ kind: "animation_frame", time: t }),
-          } as AnimationFrameEffect<AnimationMsg>,
-        ],
+        effects: [],
       };
     case "animation_stopped":
       return {
@@ -58,6 +49,18 @@ export function update(
         effects: [],
       };
   }
+}
+export function subscriptions(
+  model: Snapshot<AnimationModel>,
+): readonly Subscription<AnimationMsg>[] {
+  if (!model.isRunning) return [];
+  return [
+    {
+      kind: "animationFrame",
+      key: "animation-frame",
+      onFrame: (t: number) => ({ kind: "animation_frame", time: t }),
+    } as AnimationFrameSubscription<AnimationMsg>,
+  ];
 }
 export function view(
   snapshot: Snapshot<AnimationModel>,

@@ -8,6 +8,7 @@ import {
   RandomProvider,
   MsgLogEntry,
 } from "./types.js";
+import { Subscription, diffSubscriptions } from "./subscriptions.js";
 export interface DispatcherOptions<
   M extends Model,
   G extends Msg,
@@ -16,6 +17,11 @@ export interface DispatcherOptions<
   readonly model: M;
   readonly update: UpdateFn<M, G, E>;
   readonly effectRunner: (effect: E, dispatch: (msg: G) => void) => void;
+  readonly subscriptions?: (model: Snapshot<M>) => readonly Subscription<G>[];
+  readonly subscriptionRunner?: {
+    start: (sub: Subscription<G>, dispatch: (msg: G) => void) => void;
+    stop: (key: string) => void;
+  };
   readonly onCommit?: (snapshot: Snapshot<M>) => void;
   readonly assertInvariants?: (model: M) => void;
   readonly devMode?: boolean;
@@ -47,6 +53,7 @@ export function createDispatcher<
   let pendingNotify = false;
   const time = options.timeProvider || { now: () => Date.now() };
   const maxLogSize = options.maxLogSize ?? 10000;
+  let activeSubs: readonly Subscription<G>[] = [];
   const deepFreeze = (obj: unknown): unknown => {
     if (
       options.devMode &&
@@ -65,6 +72,14 @@ export function createDispatcher<
   if (options.devMode) {
     deepFreeze(currentModel);
   }
+  const reconcileSubscriptions = () => {
+    if (!options.subscriptions || !options.subscriptionRunner) return;
+    const newSubs = options.subscriptions(currentModel as Snapshot<M>);
+    const { toStart, toStop } = diffSubscriptions(activeSubs, newSubs);
+    toStop.forEach((key) => options.subscriptionRunner!.stop(key));
+    toStart.forEach((sub) => options.subscriptionRunner!.start(sub, dispatch));
+    activeSubs = newSubs;
+  };
   const notifySubscribers = () => {
     if (pendingNotify || isShutdown) return;
     pendingNotify = true;
@@ -74,6 +89,7 @@ export function createDispatcher<
       const snapshot = currentModel as Snapshot<M>;
       options.onCommit?.(snapshot);
       subscribers.forEach((cb) => cb(snapshot));
+      reconcileSubscriptions();
     });
   };
   const processQueue = () => {
@@ -108,6 +124,7 @@ export function createDispatcher<
       processQueue();
     }
   }
+  reconcileSubscriptions();
   return {
     dispatch,
     getSnapshot: () => currentModel as Snapshot<M>,
@@ -117,6 +134,10 @@ export function createDispatcher<
     },
     shutdown: () => {
       isShutdown = true;
+      if (options.subscriptionRunner) {
+        activeSubs.forEach((sub) => options.subscriptionRunner!.stop(sub.key));
+        activeSubs = [];
+      }
       subscribers.clear();
       queue.length = 0;
     },

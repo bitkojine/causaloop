@@ -1,5 +1,10 @@
-import { Model, UpdateResult, Effect } from "@causaloop/core";
-import { h, VNode } from "@causaloop/core";
+import { Model, UpdateResult } from "@causaloop/core";
+import {
+  h,
+  VNode,
+  Subscription,
+  AnimationFrameSubscription,
+} from "@causaloop/core";
 export interface StressModel extends Model {
   readonly status: "idle" | "running";
   readonly itemCount: number;
@@ -40,7 +45,7 @@ export type StressMsg =
 export function update(
   model: StressModel,
   msg: StressMsg,
-): UpdateResult<StressModel, Effect> {
+): UpdateResult<StressModel> {
   switch (msg.kind) {
     case "update_count":
       return { model: { ...model, itemCount: msg.count }, effects: [] };
@@ -53,12 +58,7 @@ export function update(
       }));
       return {
         model: { ...model, status: "running", items },
-        effects: [
-          {
-            kind: "animationFrame",
-            onFrame: () => ({ kind: "stress", msg: { kind: "shuffle" } }),
-          } as Effect,
-        ],
+        effects: [],
       };
     }
     case "stop":
@@ -77,15 +77,22 @@ export function update(
       }
       return {
         model: { ...model, items: newItems },
-        effects: [
-          {
-            kind: "animationFrame",
-            onFrame: () => ({ kind: "stress", msg: { kind: "shuffle" } }),
-          } as Effect,
-        ],
+        effects: [],
       };
     }
   }
+}
+export function subscriptions(
+  model: StressModel,
+): readonly Subscription<StressMsg>[] {
+  if (model.status !== "running") return [];
+  return [
+    {
+      kind: "animationFrame",
+      key: "stress-shuffle",
+      onFrame: () => ({ kind: "shuffle" }),
+    } as AnimationFrameSubscription<StressMsg>,
+  ];
 }
 export function view(
   model: StressModel,
