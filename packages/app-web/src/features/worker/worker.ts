@@ -6,10 +6,12 @@ import {
   VNode,
   h,
 } from "@causaloop/core";
+import workerUrl from "./compute.worker?worker&url";
 
 export interface WorkerModel extends Model {
   readonly result: number | null;
   readonly status: "idle" | "computing" | "done" | "error";
+  readonly error: string | null;
   readonly lastTaskId: number;
 }
 
@@ -21,6 +23,7 @@ export type WorkerMsg =
 export const initialModel: WorkerModel = {
   result: null,
   status: "idle",
+  error: null,
   lastTaskId: 0,
 };
 
@@ -34,7 +37,7 @@ export function update(
       const effect: WorkerEffect<WorkerMsg> = {
         kind: "worker",
         taskId: String(nextTaskId),
-        scriptUrl: new URL("./compute.worker.ts", import.meta.url).href,
+        scriptUrl: workerUrl,
         payload: msg.n,
         onSuccess: (res: unknown) => ({
           kind: "compute_succeeded",
@@ -48,20 +51,25 @@ export function update(
         }),
       };
       return {
-        model: { ...model, status: "computing", lastTaskId: nextTaskId },
+        model: {
+          ...model,
+          status: "computing",
+          error: null,
+          lastTaskId: nextTaskId,
+        },
         effects: [effect],
       };
     }
     case "compute_succeeded":
       if (msg.taskId !== model.lastTaskId) return { model, effects: [] };
       return {
-        model: { ...model, status: "done", result: msg.result },
+        model: { ...model, status: "done", result: msg.result, error: null },
         effects: [],
       };
     case "compute_failed":
       if (msg.taskId !== model.lastTaskId) return { model, effects: [] };
       return {
-        model: { ...model, status: "error" },
+        model: { ...model, status: "error", error: msg.error.message },
         effects: [],
       };
   }
@@ -98,6 +106,7 @@ export function view(
     h("p", {}, [
       `Status: ${snapshot.status}`,
       snapshot.result !== null ? ` | Result: ${snapshot.result}` : "",
+      snapshot.error ? ` | Error: ${snapshot.error}` : "",
     ]),
   ]);
 }

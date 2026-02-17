@@ -132,8 +132,10 @@ export class BrowserRunner {
       dispatch(effect.onSuccess(e.data));
       worker.terminate();
     };
-    worker.onerror = () => {
-      dispatch(effect.onError(new Error("Worker error")));
+    worker.onerror = (e: ErrorEvent) => {
+      // Capture detailed error info
+      const errorMsg = `Worker error: ${e.message} at ${e.filename}:${e.lineno}`;
+      dispatch(effect.onError(new Error(errorMsg)));
       worker.terminate();
     };
     worker.postMessage(effect.payload);

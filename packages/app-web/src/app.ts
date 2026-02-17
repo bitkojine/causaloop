@@ -139,6 +139,13 @@ export function view(
   dispatch: (msg: AppMsg) => void,
   onReplay: (log: MsgLogEntry[], model: Snapshot<AppModel>) => void,
 ): VNode {
+  const errorLogs = msgLog.filter(
+    (entry) =>
+      entry.msg.kind.endsWith("_failed") ||
+      (entry.msg as any).kind === "compute_failed" ||
+      (entry.msg as any).error,
+  );
+
   return h("div", {}, [
     Search.view(snapshot.search, (m) => dispatch({ kind: "search", msg: m })),
     Load.view(snapshot.load, (m) => dispatch({ kind: "load", msg: m })),
@@ -152,5 +159,20 @@ export function view(
     Devtools.view(snapshot.devtools, msgLog, initialModel, onReplay, (m) =>
       dispatch({ kind: "devtools", msg: m }),
     ),
+    h("div", { class: { "system-log": true } }, [
+      h("h3", {}, ["System Log"]),
+      errorLogs.length === 0
+        ? h("p", { class: { "log-empty": true } }, ["No errors logged."])
+        : h(
+          "ul",
+          {},
+          errorLogs.slice(-5).map((entry) =>
+            h("li", { class: { "log-error": true } }, [
+              `${new Date().toLocaleTimeString()} - ${entry.msg.kind}: ${(entry.msg as any).error?.message || "Unknown error"
+              }`,
+            ]),
+          ),
+        ),
+    ]),
   ]);
 }
