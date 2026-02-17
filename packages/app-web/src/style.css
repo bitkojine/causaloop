@@ -6,9 +6,9 @@
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: light dark;
-  color: #eee;
-  background-color: #111;
+  color-scheme: light;
+  color: #333;
+  background-color: #fdfbf7;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -28,20 +28,21 @@ body {
 }
 
 #app {
-  background: #222;
+  background: #ffffff;
   padding: 2rem;
   border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   width: 100%;
   max-width: 480px;
   box-sizing: border-box;
+  border: 1px solid #eaeaea;
 }
 
 h3 {
   margin-top: 1.5rem;
   margin-bottom: 0.5rem;
   font-size: 1.2rem;
-  color: #646cff;
+  color: #2c3e50;
 }
 
 button {
@@ -53,7 +54,9 @@ button {
   cursor: pointer;
   font-size: 1rem;
   font-weight: 500;
-  transition: background-color 0.2s;
+  transition:
+    background-color 0.2s,
+    opacity 0.2s;
 }
 
 button:hover {
@@ -61,21 +64,27 @@ button:hover {
 }
 
 button:disabled {
-  background: #444;
+  background: #ccc;
   cursor: not-allowed;
   opacity: 0.7;
+  color: #666;
 }
 
 input {
-  background: #333;
-  border: 1px solid #444;
-  color: white;
+  background: #f9f9f9;
+  border: 1px solid #ddd;
+  color: #333;
   padding: 0.6em;
   border-radius: 4px;
   font-size: 1rem;
   width: 100%;
   box-sizing: border-box;
   margin-bottom: 0.5rem;
+}
+
+input:focus {
+  border-color: #007aff;
+  background: white;
 }
 
 .btn-group {
@@ -87,7 +96,7 @@ input {
 
 .feature-container {
   margin-bottom: 1.5rem;
-  border-bottom: 1px solid #333;
+  border-bottom: 1px solid #eee;
   padding-bottom: 1rem;
 }
 
@@ -99,22 +108,24 @@ input {
   margin-top: 1rem;
   font-family: monospace;
   font-size: 0.85rem;
-  background: #000;
+  background: #f4f4f4;
+  color: #444;
   padding: 0.75rem;
   max-height: 200px;
   overflow-y: auto;
   border-radius: 4px;
   white-space: pre-wrap;
   word-break: break-all;
+  border: 1px solid #ddd;
 }
 
 .system-log {
   margin-top: 2rem;
-  border-top: 2px solid #333;
+  border-top: 2px solid #eaeaea;
   padding-top: 1rem;
 }
 
 .log-error {
-  color: #ff4444;
+  color: #d32f2f;
   margin-bottom: 0.25rem;
 }
