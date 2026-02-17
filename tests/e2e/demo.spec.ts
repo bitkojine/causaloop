@@ -46,20 +46,56 @@ test.describe("Animation Feature", () => {
     expect(finalTransform).toBe(stoppedTransform);
   });
 
+  test("should start and stop timer", async ({ page }) => {
+    await page.goto("/");
+    const startBtn = page.getByRole("button", { name: "Start Timer" });
+    const stopBtn = page.getByRole("button", { name: "Stop Timer" });
+    const countLabel = page.locator(
+      '.feature-container:has-text("Feature C: Timer") > p',
+    );
+
+    await expect(countLabel).toContainText("Count: 0");
+
+    await startBtn.click();
+    await page.waitForTimeout(1100);
+    const countAfterOneSec = await countLabel.innerText();
+    expect(parseInt(countAfterOneSec.split(":")[1].trim())).toBeGreaterThan(0);
+
+    await stopBtn.click();
+    const countAtStop = await countLabel.innerText();
+    await page.waitForTimeout(1100);
+    const finalCount = await countLabel.innerText();
+    expect(finalCount).toBe(countAtStop);
+  });
+
   test("should handle search with stale responses", async ({ page }) => {
     await page.goto("/");
     const input = page.getByPlaceholder("Search posts...");
 
     // Type slow to trigger multiple requests
     await input.fill("t");
+    await expect(page.locator("text=Status: loading (ID: 1)")).toBeVisible();
     await input.fill("te");
+    await expect(page.locator("text=Status: loading (ID: 2)")).toBeVisible();
     await input.fill("test");
+    await expect(page.locator("text=Status: loading (ID: 3)")).toBeVisible();
 
-    await expect(page.locator("text=Status: success")).toBeVisible({
+    await expect(page.locator("text=Status: success (ID: 3)")).toBeVisible({
       timeout: 10000,
     });
     const results = page.locator(".log").first();
     await expect(results).not.toBeEmpty();
+  });
+
+  test("should handle search errors", async ({ page }) => {
+    await page.goto("/");
+    // Intercept search requests and make them fail
+    await page.route("**/posts?q=fail", (route) => route.abort("failed"));
+
+    const input = page.getByPlaceholder("Search posts...");
+    await input.fill("fail");
+
+    await expect(page.locator("text=Status: error")).toBeVisible();
   });
 
   test("should handle load and cancel", async ({ page }) => {
@@ -71,6 +107,17 @@ test.describe("Animation Feature", () => {
     await expect(page.locator("text=Status: loading")).toBeVisible();
     await cancelBtn.click();
     await expect(page.locator("text=Status: cancelled")).toBeVisible();
+  });
+
+  test("should handle load errors", async ({ page }) => {
+    await page.goto("/");
+    // Intercept big data load and make it fail
+    await page.route("**/photos", (route) => route.abort("failed"));
+
+    const startBtn = page.getByRole("button", { name: "Load Big Data" });
+    await startBtn.click();
+
+    await expect(page.locator("text=Status: error")).toBeVisible();
   });
 
   test("should compute primes in worker", async ({ page }) => {
