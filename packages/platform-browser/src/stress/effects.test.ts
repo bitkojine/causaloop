@@ -112,16 +112,17 @@ describe("Stress: Effects as Data Integrity", () => {
       mockDispatch,
     );
 
-    // Expect abort to be called.
-    // But which one? The second one.
-    expect(abortSpy).toHaveBeenCalledTimes(1);
+    // Expect abort to be called TWICE.
+    // Once for the auto-cancellation of Fetch A.
+    // Once for the explicit cancellation of Fetch B.
+    expect(abortSpy).toHaveBeenCalledTimes(2);
 
     // The first controller is checking for "orphan" status.
     // In a real app, if Fetch A is still pending, it will eventually complete or timeout.
     // If it completes, it will dispatch.
     // The user MIGHT expect Fetch A to be cancelled when Fetch B starts (takeLatest).
-    // The current implementation does NOT auto-cancel.
-    // This is a "fragility" finding.
+    // The current implementation now AUTO-CANCELS!
+    // This is the correct behavior.
   });
 
   it("Worker: handles rapid creation/spam", async () => {

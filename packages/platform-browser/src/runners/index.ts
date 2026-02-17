@@ -60,6 +60,9 @@ export class BrowserRunner {
     // The previous controller for this key (if any) is implicitly replaced.
     // Cancellation of previous requests with the same key should be handled by a 'cancel' effect.
     if (effect.abortKey) {
+      if (this.controllers.has(effect.abortKey)) {
+        this.controllers.get(effect.abortKey)?.abort();
+      }
       this.controllers.set(effect.abortKey, controller);
     }
 
