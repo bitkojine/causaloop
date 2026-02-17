@@ -104,7 +104,7 @@ export function view(
       ["Compute Primes"],
     ),
     h("p", {}, [
-      `Status: ${snapshot.status}`,
+      `Worker status: ${snapshot.status}`,
       snapshot.result !== null ? ` | Result: ${snapshot.result}` : "",
       snapshot.error ? ` | Error: ${snapshot.error}` : "",
     ]),

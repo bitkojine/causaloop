@@ -86,6 +86,6 @@ export function view(
         ["Cancel"],
       ),
     ]),
-    h("p", {}, [`Status: ${snapshot.status}`]),
+    h("p", {}, [`Load status: ${snapshot.status}`]),
   ]);
 }

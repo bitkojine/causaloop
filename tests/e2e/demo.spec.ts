@@ -74,13 +74,21 @@ test.describe("Animation Feature", () => {
 
     // Type slow to trigger multiple requests
     await input.fill("t");
-    await expect(page.locator("text=Status: loading (ID: 1)")).toBeVisible();
+    await expect(
+      page.locator("text=Search status: loading (ID: 1)"),
+    ).toBeVisible();
     await input.fill("te");
-    await expect(page.locator("text=Status: loading (ID: 2)")).toBeVisible();
+    await expect(
+      page.locator("text=Search status: loading (ID: 2)"),
+    ).toBeVisible();
     await input.fill("test");
-    await expect(page.locator("text=Status: loading (ID: 3)")).toBeVisible();
+    await expect(
+      page.locator("text=Search status: loading (ID: 3)"),
+    ).toBeVisible();
 
-    await expect(page.locator("text=Status: success (ID: 3)")).toBeVisible({
+    await expect(
+      page.locator("text=Search status: success (ID: 3)"),
+    ).toBeVisible({
       timeout: 10000,
     });
     const results = page.locator(".log").first();
@@ -95,7 +103,7 @@ test.describe("Animation Feature", () => {
     const input = page.getByPlaceholder("Search posts...");
     await input.fill("fail");
 
-    await expect(page.locator("text=Status: error")).toBeVisible();
+    await expect(page.locator("text=Search status: error")).toBeVisible();
   });
 
   test("should handle load and cancel", async ({ page }) => {
@@ -110,9 +118,9 @@ test.describe("Animation Feature", () => {
     });
 
     await startBtn.click();
-    await expect(page.locator("text=Status: loading")).toBeVisible();
+    await expect(page.locator("text=Load status: loading")).toBeVisible();
     await cancelBtn.click();
-    await expect(page.locator("text=Status: cancelled")).toBeVisible();
+    await expect(page.locator("text=Load status: cancelled")).toBeVisible();
   });
 
   test("should handle load errors", async ({ page }) => {
@@ -124,7 +132,7 @@ test.describe("Animation Feature", () => {
     await startBtn.scrollIntoViewIfNeeded();
     await startBtn.click();
 
-    await expect(page.locator("text=Status: error")).toBeVisible();
+    await expect(page.locator("text=Load status: error")).toBeVisible();
   });
 
   test("should compute primes in worker", async ({ page }) => {
@@ -136,9 +144,9 @@ test.describe("Animation Feature", () => {
 
     await input.fill("1000");
     await computeBtn.click();
-    await expect(page.locator("text=Status: computing")).toBeVisible();
+    await expect(page.locator("text=Worker status: computing")).toBeVisible();
     await expect(computeBtn).toBeDisabled(); // Edge case: button disabled
-    await expect(page.locator("text=Status: done")).toBeVisible({
+    await expect(page.locator("text=Worker status: done")).toBeVisible({
       timeout: 10000,
     });
     await expect(page.locator("text=Result: 168")).toBeVisible();
@@ -157,12 +165,12 @@ test.describe("Animation Feature", () => {
 
     // Special characters
     await input.fill("?&%");
-    await expect(page.locator("text=Status: loading")).toBeVisible();
+    await expect(page.locator("text=Search status: loading")).toBeVisible();
     // API might return empty or specific error, but app shouldn't crash
     await expect(
       page
-        .locator("text=Status: success")
-        .or(page.locator("text=Status: error")),
+        .locator("text=Search status: success")
+        .or(page.locator("text=Search status: error")),
     ).toBeVisible({ timeout: 10000 });
   });
 
@@ -176,7 +184,7 @@ test.describe("Animation Feature", () => {
     // Negative number
     await input.fill("-5");
     await computeBtn.click();
-    await expect(page.locator("text=Status: done")).toBeVisible();
+    await expect(page.locator("text=Worker status: done")).toBeVisible();
     await expect(page.locator("text=Result: 0")).toBeVisible();
   });
 
@@ -238,6 +246,8 @@ test.describe("Animation Feature", () => {
 
     const input = page.getByPlaceholder("Search posts...");
     await input.fill("system_error");
+
+    await expect(page.locator("text=Search status: error")).toBeVisible();
 
     // Check System Log for error entry
     const systemLog = page.locator(".system-log");
