@@ -6,12 +6,19 @@ Platform-specific implementation for running Causaloop applications in web brows
 
 ### 1. Unified Runner (`runners/index.ts`)
 
-A robust execution engine for the most common web effects.
+A robust execution engine for web effects and subscriptions.
+
+**Effects** (one-shot operations):
 
 - **Fetch**: Managed network requests with built-in `AbortController` support and duplicate request cancellation via `abortKey`.
-- **Timer**: Serialized timer execution aligned with the MVU message queue.
-- **Animation Frame (RAF)**: High-performance frame synchronization for smooth animations.
-- **Web Workers**: A persistent worker pool that manages task queuing and worker reuse.
+- **Web Workers**: A persistent worker pool that manages task queuing, timeouts, and worker replacement on failure.
+
+**Subscriptions** (ongoing, runtime-managed):
+
+- **Timer**: `setInterval`-based ticks, keyed for clean start/stop lifecycle.
+- **Animation Frame (RAF)**: `requestAnimationFrame` loops with cancellation flags, keyed for clean start/stop lifecycle.
+
+Both subscription types are managed via `startSubscription(sub, dispatch)` and `stopSubscription(key)` methods, called by the core Dispatcher during reconciliation.
 
 ### 2. Snabbdom Renderer (`renderer.ts`)
 
@@ -34,7 +41,9 @@ This package is battle-tested in a simulated browser environment (JSDOM/Playwrig
 import { BrowserRunner } from "@causaloop/platform-browser";
 
 const runner = new BrowserRunner();
-// Use this runner with your @causaloop/core dispatcher
+
+runner.startSubscription(timerSub, dispatch);
+runner.stopSubscription("timer:my-key");
 ```
 
 ## ⚖️ License
