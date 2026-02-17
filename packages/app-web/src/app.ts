@@ -1,0 +1,107 @@
+import { Model, Msg, UpdateResult, Snapshot } from '@causaloop/core';
+import * as Search from './features/search/search.js';
+import * as Load from './features/load/load.js';
+import * as Timer from './features/timer/timer.js';
+import * as Animation from './features/animation/animation.js';
+import * as WorkerFeature from './features/worker/worker.js';
+import * as Devtools from './features/devtools/devtools.js';
+
+export interface AppModel extends Model {
+    readonly search: Search.SearchModel;
+    readonly load: Load.LoadModel;
+    readonly timer: Timer.TimerModel;
+    readonly animation: Animation.AnimationModel;
+    readonly worker: WorkerFeature.WorkerModel;
+    readonly devtools: Devtools.DevtoolsModel;
+}
+
+export type AppMsg =
+    | { kind: 'search'; msg: Search.SearchMsg }
+    | { kind: 'load'; msg: Load.LoadMsg }
+    | { kind: 'timer'; msg: Timer.TimerMsg }
+    | { kind: 'animation'; msg: Animation.AnimationMsg }
+    | { kind: 'worker'; msg: WorkerFeature.WorkerMsg }
+    | { kind: 'devtools'; msg: Devtools.DevtoolsMsg };
+
+const initialModelTimer = Timer.initialModel;
+
+export const initialModel: AppModel = {
+    search: Search.initialModel,
+    load: Load.initialModel,
+    timer: initialModelTimer,
+    animation: Animation.initialModel,
+    worker: WorkerFeature.initialModel,
+    devtools: Devtools.initialModel,
+};
+
+export function update(model: AppModel, msg: AppMsg): UpdateResult<AppModel> {
+    switch (msg.kind) {
+        case 'search': {
+            const { model: searchModel, effects } = Search.update(model.search, msg.msg);
+            return {
+                model: { ...model, search: searchModel },
+                effects: effects.map((e: any) => ({ ...e, original: e, wrap: (m: Search.SearchMsg) => ({ kind: 'search', msg: m }) })),
+            };
+        }
+        case 'load': {
+            const { model: loadModel, effects } = Load.update(model.load, msg.msg);
+            return {
+                model: { ...model, load: loadModel },
+                effects: effects.map((e: any) => ({ ...e, original: e, wrap: (m: Load.LoadMsg) => ({ kind: 'load', msg: m }) })),
+            };
+        }
+        case 'timer': {
+            const { model: timerModel, effects } = Timer.update(model.timer, msg.msg);
+            return {
+                model: { ...model, timer: timerModel },
+                effects: effects.map((e: any) => ({ ...e, original: e, wrap: (m: Timer.TimerMsg) => ({ kind: 'timer', msg: m }) })),
+            };
+        }
+        case 'animation': {
+            const { model: animModel, effects } = Animation.update(model.animation, msg.msg);
+            return {
+                model: { ...model, animation: animModel },
+                effects: effects.map((e: any) => ({ ...e, original: e, wrap: (m: Animation.AnimationMsg) => ({ kind: 'animation', msg: m }) })),
+            };
+        }
+        case 'worker': {
+            const { model: workerModel, effects } = WorkerFeature.update(model.worker, msg.msg);
+            return {
+                model: { ...model, worker: workerModel },
+                effects: effects.map((e: any) => ({ ...e, original: e, wrap: (m: WorkerFeature.WorkerMsg) => ({ kind: 'worker', msg: m }) })),
+            };
+        }
+        case 'devtools': {
+            const { model: devtoolsModel, effects } = Devtools.update(model.devtools, msg.msg);
+            return {
+                model: { ...model, devtools: devtoolsModel },
+                effects: effects.map((e: any) => ({ ...e, original: e, wrap: (m: Devtools.DevtoolsMsg) => ({ kind: 'devtools', msg: m }) })),
+            };
+        }
+    }
+}
+
+export function view(
+    snapshot: Snapshot<AppModel>,
+    msgLog: readonly any[],
+    dispatch: (msg: AppMsg) => void,
+    onReplay: (log: any[], model: any) => void
+): HTMLElement {
+    const container = document.createElement('div');
+
+    container.appendChild(Search.view(snapshot.search, (m) => dispatch({ kind: 'search', msg: m })));
+    container.appendChild(Load.view(snapshot.load, (m) => dispatch({ kind: 'load', msg: m })));
+    container.appendChild(Timer.view(snapshot.timer, (m) => dispatch({ kind: 'timer', msg: m })));
+    container.appendChild(Animation.view(snapshot.animation, (m) => dispatch({ kind: 'animation', msg: m })));
+    container.appendChild(WorkerFeature.view(snapshot.worker, (m) => dispatch({ kind: 'worker', msg: m })));
+
+    container.appendChild(Devtools.view(
+        snapshot.devtools,
+        msgLog,
+        snapshot,
+        onReplay,
+        (m) => dispatch({ kind: 'devtools', msg: m })
+    ));
+
+    return container;
+}

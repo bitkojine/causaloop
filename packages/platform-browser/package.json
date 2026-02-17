@@ -1,0 +1,17 @@
+{
+    "name": "@causaloop/platform-browser",
+    "version": "0.1.0",
+    "type": "module",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "dependencies": {
+        "@causaloop/core": "workspace:*"
+    },
+    "scripts": {
+        "build": "tsc",
+        "test": "vitest run"
+    },
+    "devDependencies": {
+        "typescript": "^5.7.3"
+    }
+}
