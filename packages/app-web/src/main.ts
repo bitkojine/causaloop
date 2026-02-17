@@ -56,21 +56,23 @@ const saveLogThrottled = throttle((log: readonly MsgLogEntry[]) => {
 
 const appRoot = document.getElementById("app")!;
 const runner = new BrowserRunner();
-export const onReplay = (log: MsgLogEntry[], model: Snapshot<AppModel>) => {
+export const onReplay = (_log: MsgLogEntry[], model: Snapshot<AppModel>) => {
+  const { log: atomicLog, snapshot: atomicSnapshot } =
+    dispatcher.getReplayableState();
   const finalSnapshot = replay({
     initialModel: model,
     update,
-    log,
+    log: atomicLog,
   });
-  const current = dispatcher.getSnapshot();
-  const isMatched = JSON.stringify(finalSnapshot) === JSON.stringify(current);
+  const isMatched =
+    JSON.stringify(finalSnapshot) === JSON.stringify(atomicSnapshot);
 
   const diffs: Array<{ key: string; expected: string; actual: string }> = [];
   if (!isMatched) {
     const replayedKeys = Object.keys(finalSnapshot);
     for (const key of replayedKeys) {
       const replayedVal = JSON.stringify(finalSnapshot[key as keyof AppModel]);
-      const currentVal = JSON.stringify(current[key as keyof AppModel]);
+      const currentVal = JSON.stringify(atomicSnapshot[key as keyof AppModel]);
       if (replayedVal !== currentVal) {
         diffs.push({
           key,
@@ -88,7 +90,7 @@ export const onReplay = (log: MsgLogEntry[], model: Snapshot<AppModel>) => {
       kind: "replay_completed",
       success: isMatched,
       diffs,
-      logLength: log.length,
+      logLength: atomicLog.length,
     },
   });
 };
