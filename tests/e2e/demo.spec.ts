@@ -217,4 +217,23 @@ test.describe("Animation Feature", () => {
       .innerText();
     expect(finalCountText).toBe(countText);
   });
+
+  test("should display errors in the System Log", async ({ page }) => {
+    await page.goto("/");
+    // Intercept search requests and make them fail
+    await page.route("**/posts?q=system_error", (route) =>
+      route.abort("failed"),
+    );
+
+    const input = page.getByPlaceholder("Search posts...");
+    await input.fill("system_error");
+
+    // Check System Log for error entry
+    const systemLog = page.locator(".system-log");
+    await expect(systemLog).toBeVisible();
+    await expect(systemLog.locator("li.log-error")).toBeVisible();
+    await expect(systemLog.locator("li.log-error")).toContainText(
+      "search_failed",
+    );
+  });
 });
