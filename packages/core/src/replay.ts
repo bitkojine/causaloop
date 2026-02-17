@@ -6,7 +6,6 @@ import {
   MsgLogEntry,
   Snapshot,
 } from "./types.js";
-
 export interface ReplayOptions<
   M extends Model,
   G extends Msg,
@@ -16,7 +15,6 @@ export interface ReplayOptions<
   readonly update: UpdateFn<M, G, E>;
   readonly log: readonly MsgLogEntry[];
 }
-
 export function replay<M extends Model, G extends Msg, E extends Effect>(
   options: ReplayOptions<M, G, E>,
 ): Snapshot<M> {

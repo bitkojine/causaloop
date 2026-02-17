@@ -4,7 +4,6 @@ function isPrime(num: number): boolean {
   }
   return num > 1;
 }
-
 self.onmessage = (e: MessageEvent) => {
   const n = e.data;
   let count = 0;

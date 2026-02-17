@@ -8,7 +8,6 @@ import {
   RandomProvider,
   MsgLogEntry,
 } from "./types.js";
-
 export interface DispatcherOptions<
   M extends Model,
   G extends Msg,
@@ -23,7 +22,6 @@ export interface DispatcherOptions<
   readonly timeProvider?: TimeProvider;
   readonly randomProvider?: RandomProvider;
 }
-
 export interface Dispatcher<M extends Model, G extends Msg> {
   dispatch(msg: G): void;
   getSnapshot(): Snapshot<M>;
@@ -31,7 +29,6 @@ export interface Dispatcher<M extends Model, G extends Msg> {
   shutdown(): void;
   getMsgLog(): readonly MsgLogEntry[];
 }
-
 export function createDispatcher<
   M extends Model,
   G extends Msg,
@@ -44,9 +41,7 @@ export function createDispatcher<
   const subscribers = new Set<(snapshot: Snapshot<M>) => void>();
   let isShutdown = false;
   let pendingNotify = false;
-
   const time = options.timeProvider || { now: () => Date.now() };
-
   const deepFreeze = (obj: unknown): unknown => {
     if (
       options.devMode &&
@@ -62,55 +57,42 @@ export function createDispatcher<
     }
     return obj;
   };
-
   if (options.devMode) {
     deepFreeze(currentModel);
   }
-
   const notifySubscribers = () => {
     if (pendingNotify || isShutdown) return;
     pendingNotify = true;
-
     void Promise.resolve().then(() => {
       if (isShutdown) return;
       pendingNotify = false;
-
       const snapshot = currentModel as Snapshot<M>;
       options.onCommit?.(snapshot);
       subscribers.forEach((cb) => cb(snapshot));
     });
   };
-
   const processQueue = () => {
     if (isProcessing || isShutdown || queue.length === 0) return;
-
     isProcessing = true;
     try {
       while (queue.length > 0) {
         const msg = queue.shift()!;
         msgLog.push({ msg, ts: time.now() });
-
         const { model: nextModel, effects } = options.update(currentModel, msg);
-
         if (options.devMode) {
           options.assertInvariants?.(nextModel);
           deepFreeze(nextModel);
         }
-
         currentModel = nextModel;
-
-        // Dispatch effects immediately
         effects.forEach((effect) => {
           options.effectRunner(effect, dispatch);
         });
       }
-      // Notify once after the entire batch is processed
       notifySubscribers();
     } finally {
       isProcessing = false;
     }
   };
-
   function dispatch(msg: G) {
     if (isShutdown) return;
     queue.push(msg);
@@ -118,7 +100,6 @@ export function createDispatcher<
       processQueue();
     }
   }
-
   return {
     dispatch,
     getSnapshot: () => currentModel as Snapshot<M>,

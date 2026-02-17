@@ -7,23 +7,29 @@ import {
   VNode,
   h,
 } from "@causaloop/core";
-
 export interface LoadModel extends Model {
   readonly status: "idle" | "loading" | "success" | "error" | "cancelled";
   readonly data: unknown | null;
 }
-
 export type LoadMsg =
-  | { kind: "load_requested" }
-  | { kind: "load_succeeded"; data: unknown }
-  | { kind: "load_failed"; error: Error }
-  | { kind: "load_cancelled" };
-
+  | {
+      kind: "load_requested";
+    }
+  | {
+      kind: "load_succeeded";
+      data: unknown;
+    }
+  | {
+      kind: "load_failed";
+      error: Error;
+    }
+  | {
+      kind: "load_cancelled";
+    };
 export const initialModel: LoadModel = {
   status: "idle",
   data: null,
 };
-
 export function update(
   model: LoadModel,
   msg: LoadMsg,
@@ -34,7 +40,7 @@ export function update(
         kind: "fetch",
         requestId: "bigload",
         purpose: "Load big data",
-        url: "https://jsonplaceholder.typicode.com/photos", // Usually large
+        url: "https://jsonplaceholder.typicode.com/photos",
         abortKey: "bigload",
         onSuccess: (data: unknown) => ({ kind: "load_succeeded", data }),
         onError: (error: Error) => ({ kind: "load_failed", error }),
@@ -61,7 +67,6 @@ export function update(
       };
   }
 }
-
 export function view(
   snapshot: Snapshot<LoadModel>,
   dispatch: (msg: LoadMsg) => void,

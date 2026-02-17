@@ -6,21 +6,16 @@ import {
   AnimationFrameEffect,
   CancelEffect,
 } from "@causaloop/core";
-
 const mockDispatch = vi.fn();
-
-// Polyfill RAF if missing (JSDOM might not have it or it might be flaky)
 if (typeof window !== "undefined" && !window.requestAnimationFrame) {
   window.requestAnimationFrame = (callback: FrameRequestCallback) => {
     return setTimeout(() => callback(Date.now()), 16) as unknown as number;
   };
 }
-
 describe("Effects Extreme Stress", () => {
   let runner: BrowserRunner;
   let mockFetch: Mock;
   let createdControllers: AbortController[];
-
   beforeEach(() => {
     mockFetch = vi.fn();
     createdControllers = [];
@@ -36,14 +31,12 @@ describe("Effects Extreme Stress", () => {
     mockDispatch.mockClear();
     vi.useFakeTimers();
   });
-
   afterEach(() => {
     vi.useRealTimers();
     vi.clearAllMocks();
   });
-
   it("Timer Storm: handles 1,000 concurrent timers", () => {
-    const COUNT = 1_000; // Reduced from 10k for CI stability
+    const COUNT = 1000;
     for (let i = 0; i < COUNT; i++) {
       runner.run(
         {
@@ -54,14 +47,11 @@ describe("Effects Extreme Stress", () => {
         mockDispatch,
       );
     }
-
     vi.runAllTimers();
     expect(mockDispatch).toHaveBeenCalledTimes(COUNT);
   });
-
   it("Fetch/Cancel Race: rapidly schedules and cancels requests", async () => {
-    mockFetch.mockImplementation(() => new Promise(() => {})); // Hang forever
-
+    mockFetch.mockImplementation(() => new Promise(() => {}));
     const COUNT = 100;
     for (let i = 0; i < COUNT; i++) {
       const abortKey = `key-${i % 10}`;
@@ -77,7 +67,6 @@ describe("Effects Extreme Stress", () => {
         } as FetchEffect,
         mockDispatch,
       );
-
       if (i % 2 === 0) {
         runner.run(
           {
@@ -88,12 +77,10 @@ describe("Effects Extreme Stress", () => {
         );
       }
     }
-
     expect(createdControllers.length).toBe(COUNT);
     const aborted = createdControllers.filter((c) => c.signal.aborted).length;
     expect(aborted).toBeGreaterThan(0);
   });
-
   it("RAF: processes backlog of animation frames", async () => {
     const COUNT = 100;
     for (let i = 0; i < COUNT; i++) {
@@ -105,7 +92,6 @@ describe("Effects Extreme Stress", () => {
         mockDispatch,
       );
     }
-
     vi.runAllTimers();
     expect(mockDispatch).toHaveBeenCalledTimes(COUNT);
   });

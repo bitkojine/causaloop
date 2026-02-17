@@ -2,22 +2,32 @@ import { describe, it, expect } from "vitest";
 import { createDispatcher } from "../dispatcher.js";
 import { replay } from "../replay.js";
 import { UpdateResult, MsgLogEntry } from "../types.js";
-
-// --- Domain ---
 type State = {
   counter: number;
   history: string[];
   randoms: number[];
 };
-
 type Action =
-  | { kind: "INC" }
-  | { kind: "DEC" }
-  | { kind: "ASYNC_INC" } // Triggers effect
-  | { kind: "ADD_RANDOM"; val: number };
-
-type SideEffect = { kind: "DELAYED_INC" } | { kind: "GENERATE_RANDOM" };
-
+  | {
+      kind: "INC";
+    }
+  | {
+      kind: "DEC";
+    }
+  | {
+      kind: "ASYNC_INC";
+    }
+  | {
+      kind: "ADD_RANDOM";
+      val: number;
+    };
+type SideEffect =
+  | {
+      kind: "DELAYED_INC";
+    }
+  | {
+      kind: "GENERATE_RANDOM";
+    };
 const update = (model: State, msg: Action): UpdateResult<State, SideEffect> => {
   switch (msg.kind) {
     case "INC":
@@ -52,7 +62,6 @@ const update = (model: State, msg: Action): UpdateResult<State, SideEffect> => {
       return { model, effects: [] };
   }
 };
-
 const effectRunner = (effect: SideEffect, dispatch: (msg: Action) => void) => {
   switch (effect.kind) {
     case "DELAYED_INC":
@@ -62,7 +71,6 @@ const effectRunner = (effect: SideEffect, dispatch: (msg: Action) => void) => {
       break;
   }
 };
-
 describe("Stress: Deterministic Replay", () => {
   it("Torture Test: Replays complex async session identically", async () => {
     const dispatcher = createDispatcher<State, Action, SideEffect>({
@@ -70,7 +78,6 @@ describe("Stress: Deterministic Replay", () => {
       update,
       effectRunner,
     });
-
     const ITERATIONS = 50;
     for (let i = 0; i < ITERATIONS; i++) {
       const rand = Math.random();
@@ -83,27 +90,21 @@ describe("Stress: Deterministic Replay", () => {
       }
       if (i % 10 === 0) await new Promise((r) => setTimeout(r, 5));
     }
-
     await new Promise((r) => setTimeout(r, 200));
-
     const finalSnapshot = dispatcher.getSnapshot();
     const log = dispatcher.getMsgLog();
-
     const replayedSnapshot = replay({
       initialModel: { counter: 0, history: [], randoms: [] },
       update,
       log,
     });
-
     expect(replayedSnapshot).toEqual(finalSnapshot);
   });
-
   it("Replay handles 10k log entries (Performance)", () => {
     const logs: MsgLogEntry[] = [];
     for (let i = 0; i < 10000; i++) {
       logs.push({ msg: { kind: "INC" }, ts: Date.now() });
     }
-
     const start = performance.now();
     const final = replay({
       initialModel: { counter: 0, history: [], randoms: [] },
@@ -111,7 +112,6 @@ describe("Stress: Deterministic Replay", () => {
       log: logs,
     });
     const end = performance.now();
-
     expect(final.counter).toBe(10000);
     expect(end - start).toBeLessThan(500);
   });

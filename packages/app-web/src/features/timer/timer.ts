@@ -6,22 +6,24 @@ import {
   VNode,
   h,
 } from "@causaloop/core";
-
 export interface TimerModel extends Model {
   readonly count: number;
   readonly isRunning: boolean;
 }
-
 export type TimerMsg =
-  | { kind: "timer_started" }
-  | { kind: "timer_ticked" }
-  | { kind: "timer_stopped" };
-
+  | {
+      kind: "timer_started";
+    }
+  | {
+      kind: "timer_ticked";
+    }
+  | {
+      kind: "timer_stopped";
+    };
 export const initialModel: TimerModel = {
   count: 0,
   isRunning: false,
 };
-
 export function update(
   model: TimerModel,
   msg: TimerMsg,
@@ -58,7 +60,6 @@ export function update(
       };
   }
 }
-
 export function view(
   snapshot: Snapshot<TimerModel>,
   dispatch: (msg: TimerMsg) => void,

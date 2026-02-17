@@ -6,22 +6,25 @@ import {
   VNode,
   h,
 } from "@causaloop/core";
-
 export interface AnimationModel extends Model {
   readonly angle: number;
   readonly isRunning: boolean;
 }
-
 export type AnimationMsg =
-  | { kind: "animation_started" }
-  | { kind: "animation_frame"; time: number }
-  | { kind: "animation_stopped" };
-
+  | {
+      kind: "animation_started";
+    }
+  | {
+      kind: "animation_frame";
+      time: number;
+    }
+  | {
+      kind: "animation_stopped";
+    };
 export const initialModel: AnimationModel = {
   angle: 0,
   isRunning: false,
 };
-
 export function update(
   model: AnimationModel,
   msg: AnimationMsg,
@@ -56,7 +59,6 @@ export function update(
       };
   }
 }
-
 export function view(
   snapshot: Snapshot<AnimationModel>,
   dispatch: (msg: AnimationMsg) => void,
