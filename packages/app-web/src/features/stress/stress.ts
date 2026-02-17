@@ -17,18 +17,18 @@ export const initialModel: StressModel = {
 };
 export type StressMsg =
   | {
-    kind: "start";
-  }
+      kind: "start";
+    }
   | {
-    kind: "stop";
-  }
+      kind: "stop";
+    }
   | {
-    kind: "shuffle";
-  }
+      kind: "shuffle";
+    }
   | {
-    kind: "update_count";
-    count: number;
-  };
+      kind: "update_count";
+      count: number;
+    };
 export function update(
   model: StressModel,
   msg: StressMsg,
