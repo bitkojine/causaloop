@@ -64,13 +64,66 @@ export const onReplay = (log: MsgLogEntry[], model: Snapshot<AppModel>) => {
   });
 };
 const savedLogStr = localStorage.getItem("causaloop_log_v1");
+let initialLog: readonly MsgLogEntry[] | undefined;
+let restoredModel: Snapshot<AppModel> | undefined;
+let restoreError: string | undefined;
+
 if (savedLogStr) {
   try {
     const log = JSON.parse(savedLogStr);
+    if (!Array.isArray(log)) throw new Error("Log is not an array");
     console.info(`[STORAGE] Found saved session with ${log.length} messages.`);
+
+    restoredModel = replay({
+      initialModel,
+      update,
+      log,
+    });
+    initialLog = log;
+    console.info("[STORAGE] Session restored successfully.");
   } catch (e) {
-    console.error("[STORAGE] Failed to parse saved log", e);
+    console.error("[STORAGE] Failed to restore session:", e);
+    restoreError = e instanceof Error ? e.message : String(e);
+
+    localStorage.removeItem("causaloop_log_v1");
   }
+}
+
+const showToast = (message: string, type: "success" | "error" = "success") => {
+  const toast = document.createElement("div");
+  toast.textContent = message;
+  toast.style.position = "fixed";
+  toast.style.bottom = "20px";
+  toast.style.right = "20px";
+  toast.style.padding = "10px 20px";
+  toast.style.borderRadius = "4px";
+  toast.style.color = "#fff";
+  toast.style.fontWeight = "500";
+  toast.style.zIndex = "1000";
+  toast.style.boxShadow = "0 2px 10px rgba(0,0,0,0.2)";
+  toast.style.transition = "opacity 0.3s ease";
+
+  if (type === "success") {
+    toast.style.backgroundColor = "#10b981";
+  } else {
+    toast.style.backgroundColor = "#ef4444";
+  }
+
+  document.body.appendChild(toast);
+
+  setTimeout(() => {
+    toast.style.opacity = "0";
+    setTimeout(() => document.body.removeChild(toast), 300);
+  }, 3000);
+};
+
+if (initialLog && restoredModel) {
+  setTimeout(() => showToast("Session Restored Successfully"), 100);
+} else if (restoreError) {
+  setTimeout(
+    () => showToast(`Session Restore Failed: ${restoreError}`, "error"),
+    100,
+  );
 }
 const renderer = createSnabbdomRenderer<AppModel>(
   appRoot,
@@ -87,7 +140,8 @@ const dispatcher = createDispatcher<
   AppMsg,
   Effect | WrappedEffect<AppMsg>
 >({
-  model: initialModel,
+  model: restoredModel || initialModel,
+  ...(initialLog ? { initialLog } : {}),
   update,
   effectRunner: (effect, dispatch) => {
     if (
