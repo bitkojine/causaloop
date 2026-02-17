@@ -23,10 +23,10 @@ The project uses `pnpm` workspaces and TypeScript project references:
 - **`packages/app-web`**: A comprehensive demo application showcasing:
   - Stale-response-safe search.
   - Request cancellation (Fetch).
-  - High-frequency animation frame loops.
+  - High-frequency animation via Virtual DOM.
   - Offloaded background computation (Web Workers).
   - DevTools for log export and deterministic replay.
-  - Modern E2E testing suite (Playwright).
+  - Isolated E2E testing.
 
 ## Features & Implementation
 
@@ -34,9 +34,9 @@ The project uses `pnpm` workspaces and TypeScript project references:
 
 Uses `requestId` correlation to ensure that if multiple search requests are in flight, only the response corresponding to the _latest_ request updates the UI state.
 
-### High-Frequency Animation (Surgical Updates)
+### Virtual DOM (VDOM) Rendering
 
-In the absence of a Virtual DOM, Causaloop uses a **Surgical Update** pattern for high-frequency state changes (e.g., animations, timers). Instead of nuking and rebuilding the entire component's DOM on every state change, the rendering loop identifies specific elements and updates only the necessary properties (like `style.transform` or `innerText`). This ensures DOM nodes remain stable, preserving focus, selection, and allowing reliable user interaction even during rapid state transitions.
+Causaloop uses **Snabbdom** for declarative UI reconciliation. Instead of manual DOM manipulation, the `view` layer returns a lightweight `VNode` tree. The `Renderer` then efficiently patches the real DOM to match this virtual state. This ensures DOM nodes remain stable, preserving focus and selection while offering a modern, declarative developer experience.
 
 ### Request Cancellation
 
@@ -72,17 +72,12 @@ npx pnpm dev
 ### Testing & Linting
 
 ```bash
-npx pnpm test            # Runs Vitest for core and app integration
-npx pnpm lint            # Runs ESLint with boundary enforcement
-npx playwright test      # Runs Playwright E2E suite
+npm run test            # Runs Vitest for core and app integration
+npm run lint            # Runs ESLint with boundary enforcement
+npm run format          # Formats the codebase with Prettier
+npm run test:e2e        # Runs Playwright E2E suite
 ```
 
-## Open Questions & Review Required
-
-> [!IMPORTANT]
-> The following areas are implemented but could benefit from further clarification or refinement.
-
-- **Virtual DOM Integration**: Should we transition the `view` layer to a proper VDOM (e.g., Snabbdom) to replace the current surgical update pattern?
 - **Effect Granularity**: Currently, the `BrowserRunner` handles a standard set of effects. Should we implement a plugin system for third-party effect runners?
 - **Snapshot Persistence**: We have JSON-based log export. Should we implement an automatic "state recovery" from `localStorage` on reload?
 - **Deterministic Randomness**: While `RandomProvider` is implemented in types, how strictly should we enforce it across all features to ensure 100% replay accuracy?
@@ -114,9 +109,7 @@ This audit evaluates `causaloop` against the baseline principles of **The Elm Ar
 
 ### 3. Deviations from TEA
 
-- **Construction-based View**: **[CRITICAL]** In Elm, `view` returns a declarative Virtual DOM (`Html msg`). In `causaloop`, `view` functions directly construct and return real `HTMLElement` objects.
-  - **Mitigation**: The project uses a **Surgical Update** pattern in `main.ts` to stabilize DOM nodes during high-frequency updates, bridging the gap between direct DOM manipulation and VDOM reconciliation.
-  - **Reference**: `packages/app-web/src/main.ts` (Surgical rendering logic).
+- **Declarative View**: **[RESOLVED]** The application uses Snabbdom for Virtual DOM reconciliation. The `view` function returns a declarative `VNode` tree, which is patched into the DOM.
 - **Logic-Side Effect Wrapping**: Features wrap their own messages in the `update` function.
   - **Risk**: Manual mapping of effects in `app.ts` adds boilerplate and potential for manual wrapping errors.
 - **No Native Subscriptions**: `causaloop` lacks a formal `subscriptions` system (like Elm's `Sub msg`). RAF and Timers are modeled as one-shot commands that must be re-queued.
