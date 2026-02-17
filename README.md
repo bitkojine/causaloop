@@ -12,7 +12,7 @@
 
 ---
 
-<!-- CI_CONCURRENCY_TEST_1 -->
+<!-- CI_CONCURRENCY_TEST_2 -->
 
 ## 🧐 Why Causaloop?
 
