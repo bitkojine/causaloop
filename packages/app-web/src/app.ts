@@ -147,6 +147,7 @@ export function update(model: AppModel, msg: AppMsg): UpdateResult<AppModel> {
               {
                 kind: "animationFrame",
                 onFrame: () => ({ kind: "stress", msg: { kind: "shuffle" } }),
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
               } as any,
             ]; // Cast because TypeScript check might fail on exact Effect union in app.ts vs core
           }

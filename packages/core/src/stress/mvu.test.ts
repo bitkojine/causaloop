@@ -1,6 +1,6 @@
-import { describe, it, expect, vi } from "vitest";
-import { createDispatcher, DispatcherOptions } from "../dispatcher.js";
-import { Model, Msg, Effect, UpdateResult } from "../types.js";
+import { describe, it, expect } from "vitest";
+import { createDispatcher } from "../dispatcher.js";
+import { UpdateResult } from "../types.js";
 
 // --- Types ---
 type TestModel = { count: number; log: string[] };
@@ -8,7 +8,8 @@ type TestMsg =
   | { kind: "INC" }
   | { kind: "DEC" }
   | { kind: "APPEND"; value: string }
-  | { kind: "DISPATCH_SYNC"; msg: TestMsg };
+  | { kind: "DISPATCH_SYNC"; msg: TestMsg }
+  | { kind: "NO_OP" };
 type TestEffect = { kind: "NO_OP" } | { kind: "DISPATCH"; msg: TestMsg };
 
 // --- Helpers ---
@@ -28,7 +29,7 @@ const update = (
       };
     case "DISPATCH_SYNC":
       return { model, effects: [{ kind: "DISPATCH", msg: msg.msg }] };
-    default:
+    case "NO_OP":
       return { model, effects: [] };
   }
 };
@@ -37,6 +38,9 @@ const effectRunner = (effect: TestEffect, dispatch: (msg: TestMsg) => void) => {
   switch (effect.kind) {
     case "DISPATCH":
       dispatch(effect.msg);
+      break;
+    case "NO_OP":
+      // Do nothing
       break;
   }
 };
@@ -169,7 +173,7 @@ describe("Stress: MVU Correctness & Race Resistance", () => {
       msg: TestMsg,
     ): UpdateResult<TestModel, TestEffect> => {
       if (msg.kind === "INC") {
-        // @ts-ignore
+        // @ts-expect-error - Testing devMode check
         model.count++; // NAUGHTY MUTATION
         return { model, effects: [] };
       }

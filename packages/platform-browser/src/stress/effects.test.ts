@@ -1,32 +1,34 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { BrowserRunner } from "../runners/index.js";
-import { Msg } from "@causaloop/core";
 
 // Mock globals
 const mockDispatch = vi.fn();
-// @ts-ignore
+// @ts-expect-error - Mocking global fetch
 global.fetch = vi.fn();
-// @ts-ignore
-global.Worker = class MockWorker {
-  onmessage: ((e: any) => void) | null = null;
-  onerror: ((e: any) => void) | null = null;
-  postMessage(data: any) {
+// @ts-expect-error - Mocking Worker
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+global.Worker = vi.fn(function (this: any) {
+  this.onmessage = null;
+  this.onerror = null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  this.postMessage = vi.fn((data: any) => {
     // Simulate async processing
     setTimeout(() => {
       if (data === "CRASH") {
-        if (this.onerror)
+        if (this.onerror) {
           this.onerror({
             message: "CRASHED",
             filename: "worker.js",
             lineno: 1,
           });
+        }
       } else if (data === "echo") {
         if (this.onmessage) this.onmessage({ data: "echo" });
       }
     }, 10);
-  }
-  terminate = vi.fn();
-};
+  });
+  this.terminate = vi.fn();
+});
 
 describe("Stress: Effects as Data Integrity", () => {
   let runner: BrowserRunner;
@@ -42,7 +44,7 @@ describe("Stress: Effects as Data Integrity", () => {
   });
 
   it("Fetch: handles 500 errors gracefully", async () => {
-    // @ts-ignore
+    // @ts-expect-error - Mocking global fetch
     global.fetch.mockResolvedValue({
       ok: false,
       status: 500,
@@ -52,8 +54,9 @@ describe("Stress: Effects as Data Integrity", () => {
       {
         kind: "fetch",
         url: "/api/crash",
-        onError: (err: any) => ({ kind: "ERROR", err }),
-        onSuccess: (data: any) => ({ kind: "SUCCESS", data }),
+        onError: (err: unknown) => ({ kind: "ERROR", err }),
+        onSuccess: (data: unknown) => ({ kind: "SUCCESS", data }),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any,
       mockDispatch,
     );
@@ -71,7 +74,7 @@ describe("Stress: Effects as Data Integrity", () => {
     // And do we leak controllers?
 
     const abortSpy = vi.spyOn(AbortController.prototype, "abort");
-    // @ts-ignore
+    // @ts-expect-error - Mocking global fetch
     global.fetch.mockImplementation(() => new Promise(() => {})); // Never resolves
 
     // 1. Fetch A
@@ -82,6 +85,7 @@ describe("Stress: Effects as Data Integrity", () => {
         abortKey: "key1",
         onSuccess: () => ({ kind: "OK" }),
         onError: () => ({ kind: "ERR" }),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any,
       mockDispatch,
     );
@@ -94,6 +98,7 @@ describe("Stress: Effects as Data Integrity", () => {
         abortKey: "key1", // Overwrites key in map?
         onSuccess: () => ({ kind: "OK" }),
         onError: () => ({ kind: "ERR" }),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any,
       mockDispatch,
     );
@@ -103,6 +108,7 @@ describe("Stress: Effects as Data Integrity", () => {
       {
         kind: "cancel",
         abortKey: "key1",
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any,
       mockDispatch,
     );
@@ -130,6 +136,7 @@ describe("Stress: Effects as Data Integrity", () => {
           payload: "echo",
           onSuccess: () => ({ kind: "OK" }),
           onError: () => ({ kind: "ERR" }),
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any,
         mockDispatch,
       );
@@ -149,6 +156,7 @@ describe("Stress: Effects as Data Integrity", () => {
         payload: "CRASH",
         onSuccess: () => ({ kind: "OK" }),
         onError: (err: Error) => ({ kind: "WORKER_ERR", message: err.message }),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any,
       mockDispatch,
     );

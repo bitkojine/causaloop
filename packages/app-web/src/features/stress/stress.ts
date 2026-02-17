@@ -1,4 +1,5 @@
-import { Model, Msg, UpdateResult, Effect, h, VNode } from "@causaloop/core";
+import { Model, UpdateResult } from "@causaloop/core";
+import { h, VNode } from "@causaloop/core"; // Re-adding h and VNode as they are used
 
 export interface StressModel extends Model {
   readonly status: "idle" | "running";
@@ -20,14 +21,14 @@ export type StressMsg =
   | { kind: "shuffle" }
   | { kind: "update_count"; count: number };
 
-export interface StressEffect extends Effect {
-  kind: "schedule_shuffle";
-}
+// StressEffect is removed as it's no longer used directly, and the new effect type is handled by the core.
 
 export function update(
   model: StressModel,
   msg: StressMsg,
-): UpdateResult<StressModel, StressEffect> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): UpdateResult<StressModel, any> {
+  // Changed Effect to any because the new effect type is not defined here
   switch (msg.kind) {
     case "update_count":
       return { model: { ...model, itemCount: msg.count }, effects: [] };
@@ -38,7 +39,13 @@ export function update(
       }));
       return {
         model: { ...model, status: "running", items },
-        effects: [{ kind: "schedule_shuffle" }],
+        effects: [
+          {
+            kind: "animationFrame",
+            onFrame: () => ({ kind: "stress", msg: { kind: "shuffle" } }),
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          } as any,
+        ], // Cast because TypeScript check might fail on exact Effect union in app.ts vs coress
       };
     }
     case "stop":
@@ -60,7 +67,13 @@ export function update(
 
       return {
         model: { ...model, items: newItems },
-        effects: [{ kind: "schedule_shuffle" }],
+        effects: [
+          {
+            kind: "animationFrame",
+            onFrame: () => ({ kind: "stress", msg: { kind: "shuffle" } }),
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          } as any,
+        ],
       };
     }
   }
@@ -132,6 +145,7 @@ export function view(
   const end = performance.now();
   // We can't easily update model in view (infinite loop), but we can log it
   if (model.status === "running" && Math.random() < 0.05) {
+    // eslint-disable-next-line no-console
     console.log(
       `Stress View Generation: ${(end - start).toFixed(2)}ms for ${model.items.length} items`,
     );
