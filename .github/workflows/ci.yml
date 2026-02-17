@@ -1,35 +1,35 @@
 name: CI
 
 on:
-    push:
-        branches: [main]
-    pull_request:
-        branches: [main]
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
 
 jobs:
-    build:
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@v4
-            - uses: pnpm/action-setup@v3
-              with:
-                  version: 9
-            - uses: actions/setup-node@v4
-              with:
-                  node-version: 20
-                  cache: "pnpm"
-            - name: Install dependencies
-              run: pnpm install
-            - name: Lint
-              run: pnpm lint
-            - name: Test
-              run: pnpm test
-            - name: Build
-              run: pnpm build
-            - name: Deploy
-              if: github.ref == 'refs/heads/main'
-              run: |
-                  # Example deployment to GitHub Pages
-                  # cd packages/app-web && pnpm build
-                  # ... deployment logic ...
-                  echo "Deploying to GitHub Pages..."
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "pnpm"
+      - name: Install dependencies
+        run: pnpm install
+      - name: Lint
+        run: pnpm lint
+      - name: Build
+        run: pnpm build
+      - name: Test
+        run: pnpm test
+      - name: Deploy
+        if: github.ref == 'refs/heads/main'
+        run: |
+          # Example deployment to GitHub Pages
+          # cd packages/app-web && pnpm build
+          # ... deployment logic ...
+          echo "Deploying to GitHub Pages..."
