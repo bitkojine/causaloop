@@ -103,6 +103,12 @@ test.describe("Animation Feature", () => {
     const startBtn = page.getByRole("button", { name: "Load Big Data" });
     const cancelBtn = page.getByRole("button", { name: "Cancel" });
 
+    // Mock network delay to ensure it doesn't finish too fast
+    await page.route("**/photos", async (route) => {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await route.continue();
+    });
+
     await startBtn.click();
     await expect(page.locator("text=Status: loading")).toBeVisible();
     await cancelBtn.click();
@@ -115,6 +121,7 @@ test.describe("Animation Feature", () => {
     await page.route("**/photos", (route) => route.abort("failed"));
 
     const startBtn = page.getByRole("button", { name: "Load Big Data" });
+    await startBtn.scrollIntoViewIfNeeded();
     await startBtn.click();
 
     await expect(page.locator("text=Status: error")).toBeVisible();
@@ -122,7 +129,9 @@ test.describe("Animation Feature", () => {
 
   test("should compute primes in worker", async ({ page }) => {
     await page.goto("/");
-    const input = page.locator('input[type="number"]');
+    const input = page.locator(
+      '.feature-container:has-text("Feature E: Worker Compute") input[type="number"]',
+    );
     const computeBtn = page.getByRole("button", { name: "Compute Primes" });
 
     await input.fill("1000");
@@ -159,7 +168,9 @@ test.describe("Animation Feature", () => {
 
   test("should handle invalid worker input", async ({ page }) => {
     await page.goto("/");
-    const input = page.locator('input[type="number"]');
+    const input = page.locator(
+      '.feature-container:has-text("Feature E: Worker Compute") input[type="number"]',
+    );
     const computeBtn = page.getByRole("button", { name: "Compute Primes" });
 
     // Negative number

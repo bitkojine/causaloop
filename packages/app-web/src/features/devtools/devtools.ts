@@ -19,7 +19,8 @@ export type DevtoolsMsg =
       log: MsgLogEntry[];
       initialModel: Snapshot<Model>;
     }
-  | { kind: "replay_completed"; success: boolean };
+  | { kind: "replay_completed"; success: boolean }
+  | { kind: "log_imported"; log: MsgLogEntry[] };
 
 export const initialModel: DevtoolsModel = {
   isOpen: false,
@@ -37,6 +38,11 @@ export function update(
         effects: [],
       };
     case "replay_triggered":
+      return { model, effects: [] };
+    case "log_imported":
+      // This is a "silent" update to the devtools state if needed,
+      // but usually we want to trigger a replay or just store it.
+      // For now, let's just make it available to the view.
       return { model, effects: [] };
     case "replay_completed":
       return {
@@ -101,10 +107,61 @@ export function view<M extends Model>(
       h(
         "button",
         {
+          class: { "import-btn": true },
+          on: {
+            click: () => {
+              const input = document.createElement("input");
+              input.type = "file";
+              input.accept = ".json";
+              input.onchange = (e) => {
+                const file = (e.target as HTMLInputElement).files?.[0];
+                if (file) {
+                  const reader = new FileReader();
+                  reader.onload = (re) => {
+                    const content = re.target?.result as string;
+                    try {
+                      const log = JSON.parse(content);
+                      onReplay(log, currentModel);
+                    } catch (err) {
+                      console.error("Failed to parse log", err);
+                    }
+                  };
+                  reader.readAsText(file);
+                }
+              };
+              input.click();
+            },
+          },
+        },
+        ["Import & Replay"],
+      ),
+      h(
+        "button",
+        {
           class: { "replay-btn": true },
           on: { click: () => onReplay([...msgLog], currentModel) },
         },
         ["Replay Log"],
+      ),
+      h(
+        "button",
+        {
+          class: { "restore-btn": true },
+          on: {
+            click: () => {
+              const saved = localStorage.getItem("causaloop_log_v1");
+              if (saved) {
+                try {
+                  const log = JSON.parse(saved);
+                  onReplay(log, currentModel);
+                } catch (e) {
+                  console.error("Failed to restore", e);
+                }
+              }
+            },
+          },
+        },
+        ["Restore Session"],
       ),
     ]),
     snapshot.lastReplayResult

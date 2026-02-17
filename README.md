@@ -27,15 +27,17 @@ It’s built on the belief that:
 ## ✨ Key Features
 
 - **⚡ Virtual DOM Rendering** `[Ready]`  
-  High-performance UI reconciliation using Snabbdom.
+  High-performance UI reconciliation using Snabbdom, throttled to microtask batches for maximum efficiency.
 - **🛡️ 100% Type Safety** `[Ready]`  
   Zero `any` types across the entire monorepo, strictly enforced in CI.
-- **🧪 Deterministic Replay** `[Experimental]`  
-  Export message logs to reproduce issues. (Note: 100% reliability depends on upcoming context injection).
+- **🧪 Deterministic Replay** `[Ready]`  
+  Export and import message logs to reproduce issues across sessions. Supports `localStorage` persistence.
+- **🤖 Worker Pool** `[Ready]`  
+  Scalable background computation with persistent worker orchestration and task queuing.
 - **🏗️ Monorepo First** `[Ready]`  
   Powered by `pnpm` workspaces and TypeScript Project References.
 - **🎭 Modern E2E Suite** `[Ready]`  
-  Comprehensive Playwright coverage running in dedicated CI workflows.
+  Comprehensive Playwright coverage including chaotic monkey testing for resilience verification.
 - **⚙️ Effect Isolation** `[Ready]`  
   Pure logic in `@causaloop/core`, platform-specific runners in `@causaloop/platform-browser`.
 
@@ -43,13 +45,13 @@ It’s built on the belief that:
 
 ## 📊 Project Maturity
 
-| Feature                  | Status         | Confidence | Notes                                                      |
-| :----------------------- | :------------- | :--------- | :--------------------------------------------------------- |
-| **MVU Core**             | `Ready`        | Moderate   | Solid foundation, requires more complex real-world stress. |
-| **Snabbdom VDOM**        | `Ready`        | Moderate   | Functional integration; E2E coverage is good but nascent.  |
-| **Deterministic Replay** | `Experimental` | Low-Mid    | Proof-of-concept; lacks strict time/random providers.      |
-| **Web Workers**          | `Preview`      | Low        | Basic orchestration; single worker, no error recovery yet. |
-| **CI/CD Enforcer**       | `Ready`        | High       | Static checks are binary and highly reliable.              |
+| Feature                  | Status  | Confidence | Notes                                                            |
+| :----------------------- | :------ | :--------- | :--------------------------------------------------------------- |
+| **MVU Core**             | `Ready` | High       | Hardened against high-frequency throughput (100k+ msg/tick).     |
+| **Snabbdom VDOM**        | `Ready` | High       | Throttled rendering ensures smooth UI even under message storms. |
+| **Deterministic Replay** | `Ready` | High       | Fully reproducible cross-session replay via persistent logs.     |
+| **Web Workers**          | `Ready` | High       | Robust Worker Pool with concurrency limits and queuing.          |
+| **CI/CD Enforcer**       | `Ready` | High       | Static checks are binary and highly reliable.                    |
 
 ---
 
@@ -58,28 +60,33 @@ It’s built on the belief that:
 ### Prerequisites
 
 - [Node.js](https://nodejs.org/) >= 20.0.0
-- [pnpm](https://pnpm.io/) >= 9.0.0
+- [pnpm](https://pnpm.io/) >= 10.0.0
 
 ### Installation
 
 ```bash
-npm install
+pnpm install
 ```
 
 ### Development
 
 ```bash
-npm run dev
+pnpm dev
 ```
 
 ### Testing & Quality
 
 ```bash
-npm run test        # Unit & Integration tests
-npm run test:e2e    # Playwright E2E suite
-npm run lint        # ESLint boundary enforcement
-npm run format      # Prettier formatting
+pnpm test          # Unit & Integration tests
+pnpm test:stress   # Performance & Race condition stress tests
+pnpm test:e2e      # Playwright E2E suite
+pnpm lint          # ESLint boundary enforcement
+pnpm format        # Prettier formatting
 ```
+
+### Test Doubles & Mocks
+
+For a detailed inventory of mocks, spies, and fakes used in this project (including E2E network interception), see [TEST_DOUBLES.md](./TEST_DOUBLES.md).
 
 ---
 
@@ -93,7 +100,7 @@ npm run format      # Prettier formatting
 │   └── app-web/           # Demo application (Search, Timer, Animation, Workers)
 ├── tests/
 │   └── e2e/               # Playwright test suite
-└── .github/workflows/     # CI/CD (Main CI & Separate E2E)
+└── .github/workflows/     # CI/CD (Main CI, E2E, and Stress/Stability workflows)
 ```
 
 ---
@@ -108,10 +115,7 @@ Causaloop is continuously audited against **The Elm Architecture (TEA)** baselin
 - **Message-Driven**: State transitions only happen via `Msg` objects.
 - **Declarative Effects**: Side effects are data structures, not executions.
 - **FIFO Processing**: Serialized message queue prevents race conditions.
-
-### 🌓 Resolved Deviations
-
-- **Declarative View**: We've transitioned from surgical DOM updates to a proper **Virtual DOM** (Snabbdom) for UI reconciliation.
+- **Batch Rendering**: UI notifications are deferred to microtasks to prevent redundant renders during message bursts.
 
 ### 🚧 Structural Integrity
 
@@ -122,15 +126,10 @@ Causaloop is continuously audited against **The Elm Architecture (TEA)** baselin
 
 ## 🛣️ Roadmap
 
-### 🏃 Actually Happening (Near-term)
+### 🔭 Future Vision
 
-- [ ] **Snapshot Persistence**: Automated state recovery from `localStorage`.
-- [ ] **Context Injection**: Updates to the `UpdateFn` signature to include `Time` and `Random` providers for 100% replay reliability.
+- [ ] **Context Injection**: Updates to the `UpdateFn` signature to include explicit `Time` and `Random` providers for 100% pure randomness/time.
 - [ ] **Model Validation**: `devMode` invariants to verify model serializability.
-
-### 🔭 Long-term Vision
-
-- [ ] **Worker Pool**: Scaling background computation with persistent worker orchestration.
 - [ ] **SSR Support**: Node.js effect runners for server-side rendering.
 - [ ] **Time-Travel Debugger UI**: A standalone visual interface for scrubbing through exported logs.
 

@@ -5,6 +5,7 @@ import {
   MsgLogEntry,
   VNode,
   h,
+  Effect,
 } from "@causaloop/core";
 import * as Search from "./features/search/search.js";
 import * as Load from "./features/load/load.js";
@@ -12,6 +13,7 @@ import * as Timer from "./features/timer/timer.js";
 import * as Animation from "./features/animation/animation.js";
 import * as WorkerFeature from "./features/worker/worker.js";
 import * as Devtools from "./features/devtools/devtools.js";
+import * as Stress from "./features/stress/stress.js";
 
 export interface AppModel extends Model {
   readonly search: Search.SearchModel;
@@ -20,6 +22,7 @@ export interface AppModel extends Model {
   readonly animation: Animation.AnimationModel;
   readonly worker: WorkerFeature.WorkerModel;
   readonly devtools: Devtools.DevtoolsModel;
+  readonly stress: Stress.StressModel;
 }
 
 export type AppMsg =
@@ -28,7 +31,8 @@ export type AppMsg =
   | { kind: "timer"; msg: Timer.TimerMsg }
   | { kind: "animation"; msg: Animation.AnimationMsg }
   | { kind: "worker"; msg: WorkerFeature.WorkerMsg }
-  | { kind: "devtools"; msg: Devtools.DevtoolsMsg };
+  | { kind: "devtools"; msg: Devtools.DevtoolsMsg }
+  | { kind: "stress"; msg: Stress.StressMsg };
 
 const initialModelTimer = Timer.initialModel;
 
@@ -39,6 +43,7 @@ export const initialModel: AppModel = {
   animation: Animation.initialModel,
   worker: WorkerFeature.initialModel,
   devtools: Devtools.initialModel,
+  stress: Stress.initialModel,
 };
 
 export function update(model: AppModel, msg: AppMsg): UpdateResult<AppModel> {
@@ -130,6 +135,26 @@ export function update(model: AppModel, msg: AppMsg): UpdateResult<AppModel> {
         })),
       };
     }
+    case "stress": {
+      const { model: stressModel, effects } = Stress.update(
+        model.stress,
+        msg.msg,
+      );
+      return {
+        model: { ...model, stress: stressModel },
+        effects: effects.flatMap((e) => {
+          if (e.kind === "schedule_shuffle") {
+            return [
+              {
+                kind: "animationFrame",
+                onFrame: () => ({ kind: "stress", msg: { kind: "shuffle" } }),
+              } as Effect, // Cast to generic Effect to satisfy type checker
+            ];
+          }
+          return [];
+        }),
+      };
+    }
   }
 }
 
@@ -167,6 +192,7 @@ export function view(
     Devtools.view(snapshot.devtools, msgLog, initialModel, onReplay, (m) =>
       dispatch({ kind: "devtools", msg: m }),
     ),
+    Stress.view(snapshot.stress, (m) => dispatch({ kind: "stress", msg: m })),
     h("div", { class: { "system-log": true } }, [
       h("h3", {}, ["System Log"]),
       errorLogs.length === 0

@@ -1,18 +1,15 @@
-name: E2E Tests
+name: Stress & Stability Tests
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  test:
-    timeout-minutes: 60
+  stress-stability:
+    timeout-minutes: 120
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -43,14 +40,22 @@ jobs:
         if: steps.playwright-cache.outputs.cache-hit == 'true'
       - name: Build packages
         run: pnpm build
-      - name: Run Playwright tests
-        run: pnpm test:e2e
-        timeout-minutes: 20
+
+      - name: Run Stress Tests
+        run: pnpm test:stress
+        timeout-minutes: 15
         env:
           CI: true
+
+      - name: Run Stability Tests
+        run: pnpm test:stability
+        timeout-minutes: 60
+        env:
+          CI: true
+
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: playwright-report
+          name: playwright-stress-report
           path: playwright-report/
           retention-days: 30
