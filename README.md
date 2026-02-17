@@ -26,12 +26,30 @@ It’s built on the belief that:
 
 ## ✨ Key Features
 
-- **⚡ Virtual DOM Rendering**: High-performance UI reconciliation using Snabbdom.
-- **🛡️ 100% Type Safety**: Zero `any` types across the entire monorepo, strictly enforced in CI.
-- **🧪 Deterministic Replay**: Export message logs to reproduce and debug production issues locally.
-- **🏗️ Monorepo First**: Powered by `pnpm` workspaces and TypeScript Project References.
-- **🎭 Modern E2E Suite**: Comprehensive Playwright coverage running in dedicated CI workflows.
-- **⚙️ Effect Isolation**: Pure logic in `@causaloop/core`, platform-specific runners in `@causaloop/platform-browser`.
+- **⚡ Virtual DOM Rendering** `[Ready]`  
+  High-performance UI reconciliation using Snabbdom.
+- **🛡️ 100% Type Safety** `[Ready]`  
+  Zero `any` types across the entire monorepo, strictly enforced in CI.
+- **🧪 Deterministic Replay** `[Experimental]`  
+  Export message logs to reproduce issues. (Note: 100% reliability depends on upcoming context injection).
+- **🏗️ Monorepo First** `[Ready]`  
+  Powered by `pnpm` workspaces and TypeScript Project References.
+- **🎭 Modern E2E Suite** `[Ready]`  
+  Comprehensive Playwright coverage running in dedicated CI workflows.
+- **⚙️ Effect Isolation** `[Ready]`  
+  Pure logic in `@causaloop/core`, platform-specific runners in `@causaloop/platform-browser`.
+
+---
+
+## 📊 Project Maturity
+
+| Feature                  | Status         | Reliability | Notes                                                    |
+| :----------------------- | :------------- | :---------- | :------------------------------------------------------- |
+| **MVU Core**             | `Ready`        | High        | Tested & production-ready.                               |
+| **Snabbdom VDOM**        | `Ready`        | High        | Replaced legacy construction-based rendering.            |
+| **Deterministic Replay** | `Experimental` | Medium      | Works for simple flows; lacks strict provider injection. |
+| **Web Workers**          | `Preview`      | Medium      | Single-worker approach; standard message handling.       |
+| **CI/CD Enforcer**       | `Ready`        | High        | Guards formatting, types, and forbidden comments.        |
 
 ---
 
@@ -104,10 +122,17 @@ Causaloop is continuously audited against **The Elm Architecture (TEA)** baselin
 
 ## 🛣️ Roadmap
 
-- [ ] **Snapshot Persistence**: Implement automatic state recovery from `localStorage`.
-- [ ] **Context Injection**: Update the `UpdateFn` signature to explicitly include injected providers (Time, Random).
-- [ ] **Worker Pool**: persistent workers for high-frequency background tasks.
-- [ ] **SSR Support**: Extend `platform-browser` with a Node provider for server-side rendering.
+### 🏃 Actually Happening (Near-term)
+
+- [ ] **Snapshot Persistence**: Automated state recovery from `localStorage`.
+- [ ] **Context Injection**: Updates to the `UpdateFn` signature to include `Time` and `Random` providers for 100% replay reliability.
+- [ ] **Model Validation**: `devMode` invariants to verify model serializability.
+
+### 🔭 Long-term Vision
+
+- [ ] **Worker Pool**: Scaling background computation with persistent worker orchestration.
+- [ ] **SSR Support**: Node.js effect runners for server-side rendering.
+- [ ] **Time-Travel Debugger UI**: A standalone visual interface for scrubbing through exported logs.
 
 ---
 
