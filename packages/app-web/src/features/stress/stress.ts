@@ -17,18 +17,18 @@ export const initialModel: StressModel = {
 };
 export type StressMsg =
   | {
-      kind: "start";
-    }
+    kind: "start";
+  }
   | {
-      kind: "stop";
-    }
+    kind: "stop";
+  }
   | {
-      kind: "shuffle";
-    }
+    kind: "shuffle";
+  }
   | {
-      kind: "update_count";
-      count: number;
-    };
+    kind: "update_count";
+    count: number;
+  };
 export function update(
   model: StressModel,
   msg: StressMsg,
@@ -137,7 +137,5 @@ export function view(
       ],
     ),
   ]);
-  if (model.status === "running" && Math.random() < 0.05) {
-  }
   return nodes;
 }

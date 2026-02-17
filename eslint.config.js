@@ -19,6 +19,7 @@ export default tseslint.config(
       "packages/app-web/vitest.config.ts",
       "**/*.worker.ts",
       "**/integration.test.ts",
+      "scripts/**",
     ],
   },
   eslint.configs.recommended,
