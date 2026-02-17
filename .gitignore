@@ -1,10 +1,12 @@
 # Dependencies
 node_modules/
+.pnpm-store/
 
 # Build Output
 dist/
-*.tsbuildinfo
 build/
+*.tsbuildinfo
+*.local
 
 # IDE / Editor
 .vscode/*
@@ -12,6 +14,9 @@ build/
 .idea/
 *.swp
 *.swo
+.project
+.classpath
+.settings/
 
 # Logs
 *.log
@@ -22,6 +27,11 @@ pnpm-debug.log*
 
 # OS / System
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+thumbs.db
 Thumbs.db
 
 # Testing
@@ -29,15 +39,12 @@ coverage/
 test-results/
 playwright-report/
 blob-report/
-playwright-report/
+.eslintcache
 
 # Environment
 .env
 .env.local
 .env.*.local
-
-# Vite
-*.local
 
 # Workers (if generated)
 *.worker.js
