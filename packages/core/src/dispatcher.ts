@@ -22,6 +22,7 @@ export interface DispatcherOptions<
   readonly timeProvider?: TimeProvider;
   readonly randomProvider?: RandomProvider;
   readonly maxLogSize?: number;
+  readonly initialLog?: readonly MsgLogEntry[];
 }
 export interface Dispatcher<M extends Model, G extends Msg> {
   dispatch(msg: G): void;
@@ -38,7 +39,9 @@ export function createDispatcher<
   let currentModel = options.model;
   let isProcessing = false;
   const queue: G[] = [];
-  const msgLog: MsgLogEntry[] = [];
+  const msgLog: MsgLogEntry[] = options.initialLog
+    ? [...options.initialLog]
+    : [];
   const subscribers = new Set<(snapshot: Snapshot<M>) => void>();
   let isShutdown = false;
   let pendingNotify = false;
