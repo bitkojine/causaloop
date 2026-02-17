@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { createDispatcher } from "../dispatcher.js";
 import { replay } from "../replay.js";
-import { UpdateResult } from "../types.js";
+import { UpdateResult, MsgLogEntry } from "../types.js";
 
 // --- Domain ---
 type State = {
@@ -99,8 +99,7 @@ describe("Stress: Deterministic Replay", () => {
   });
 
   it("Replay handles 10k log entries (Performance)", () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const logs: any[] = [];
+    const logs: MsgLogEntry[] = [];
     for (let i = 0; i < 10000; i++) {
       logs.push({ msg: { kind: "INC" }, ts: Date.now() });
     }

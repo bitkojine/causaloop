@@ -81,6 +81,10 @@ npm run lint        # ESLint boundary enforcement
 npm run format      # Prettier formatting
 ```
 
+### Test Doubles & Mocks
+
+For a detailed inventory of mocks, spies, and fakes used in this project (including E2E network interception), see [TEST_DOUBLES.md](./TEST_DOUBLES.md).
+
 ---
 
 ## 📂 Project Structure

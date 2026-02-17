@@ -1,28 +1,30 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { BrowserRunner } from "../runners/index.js";
+import { FetchEffect, WorkerEffect, CancelEffect } from "@causaloop/core";
 
 // Mock globals
 const mockDispatch = vi.fn();
 global.fetch = vi.fn();
-// @ts-expect-error - Mocking Worker
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-global.Worker = vi.fn(function (this: any) {
+// @ts-expect-error - Mocking global Worker
+global.Worker = vi.fn(function (this: Worker) {
   this.onmessage = null;
   this.onerror = null;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  this.postMessage = vi.fn((data: any) => {
+  this.postMessage = vi.fn((data: unknown) => {
     // Simulate async processing
     setTimeout(() => {
       if (data === "CRASH") {
         if (this.onerror) {
-          this.onerror({
-            message: "CRASHED",
-            filename: "worker.js",
-            lineno: 1,
-          });
+          this.onerror(
+            new ErrorEvent("error", {
+              message: "CRASHED",
+              filename: "worker.js",
+              lineno: 1,
+            }),
+          );
         }
       } else if (data === "echo") {
-        if (this.onmessage) this.onmessage({ data: "echo" });
+        if (this.onmessage)
+          this.onmessage(new MessageEvent("message", { data: "echo" }));
       }
     }, 10);
   });
@@ -53,10 +55,11 @@ describe("Stress: Effects as Data Integrity", () => {
       {
         kind: "fetch",
         url: "/api/crash",
+        requestId: "req-crash",
+        purpose: "stress",
         onError: (err: unknown) => ({ kind: "ERROR", err }),
         onSuccess: (data: unknown) => ({ kind: "SUCCESS", data }),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any,
+      } as FetchEffect,
       mockDispatch,
     );
 
@@ -82,10 +85,11 @@ describe("Stress: Effects as Data Integrity", () => {
         kind: "fetch",
         url: "/api/long",
         abortKey: "key1",
+        requestId: "req-1",
+        purpose: "stress",
         onSuccess: () => ({ kind: "OK" }),
         onError: () => ({ kind: "ERR" }),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any,
+      } as FetchEffect,
       mockDispatch,
     );
 
@@ -95,10 +99,11 @@ describe("Stress: Effects as Data Integrity", () => {
         kind: "fetch",
         url: "/api/long",
         abortKey: "key1", // Overwrites key in map?
+        requestId: "req-2",
+        purpose: "stress",
         onSuccess: () => ({ kind: "OK" }),
         onError: () => ({ kind: "ERR" }),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any,
+      } as FetchEffect,
       mockDispatch,
     );
 
@@ -107,8 +112,7 @@ describe("Stress: Effects as Data Integrity", () => {
       {
         kind: "cancel",
         abortKey: "key1",
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any,
+      } as CancelEffect,
       mockDispatch,
     );
 
@@ -133,11 +137,11 @@ describe("Stress: Effects as Data Integrity", () => {
         {
           kind: "worker",
           scriptUrl: "worker.js",
+          taskId: "task-1",
           payload: "echo",
           onSuccess: () => ({ kind: "OK" }),
           onError: () => ({ kind: "ERR" }),
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as any,
+        } as WorkerEffect,
         mockDispatch,
       );
     }
@@ -153,11 +157,11 @@ describe("Stress: Effects as Data Integrity", () => {
       {
         kind: "worker",
         scriptUrl: "worker.js",
+        taskId: "task-crash",
         payload: "CRASH",
         onSuccess: () => ({ kind: "OK" }),
         onError: (err: Error) => ({ kind: "WORKER_ERR", message: err.message }),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any,
+      } as WorkerEffect,
       mockDispatch,
     );
 

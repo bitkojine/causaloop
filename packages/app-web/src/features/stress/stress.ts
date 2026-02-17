@@ -1,4 +1,4 @@
-import { Model, UpdateResult } from "@causaloop/core";
+import { Model, UpdateResult, Effect } from "@causaloop/core";
 import { h, VNode } from "@causaloop/core"; // Re-adding h and VNode as they are used
 
 export interface StressModel extends Model {
@@ -26,8 +26,7 @@ export type StressMsg =
 export function update(
   model: StressModel,
   msg: StressMsg,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-): UpdateResult<StressModel, any> {
+): UpdateResult<StressModel, Effect> {
   // Changed Effect to any because the new effect type is not defined here
   switch (msg.kind) {
     case "update_count":
@@ -43,9 +42,8 @@ export function update(
           {
             kind: "animationFrame",
             onFrame: () => ({ kind: "stress", msg: { kind: "shuffle" } }),
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          } as any,
-        ], // Cast because TypeScript check might fail on exact Effect union in app.ts vs coress
+          } as Effect,
+        ],
       };
     }
     case "stop":
@@ -71,8 +69,7 @@ export function update(
           {
             kind: "animationFrame",
             onFrame: () => ({ kind: "stress", msg: { kind: "shuffle" } }),
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          } as any,
+          } as Effect,
         ],
       };
     }
@@ -83,7 +80,7 @@ export function view(
   model: StressModel,
   dispatch: (msg: StressMsg) => void,
 ): VNode {
-  const start = performance.now();
+  // const start = performance.now();
 
   const nodes = h("div", { class: { "stress-container": true } }, [
     h("h3", {}, ["Feature F: VDOM Stress"]),
@@ -142,14 +139,10 @@ export function view(
     ),
   ]);
 
-  const end = performance.now();
+  // const end = performance.now();
   // We can't easily update model in view (infinite loop), but we can log it
   if (model.status === "running" && Math.random() < 0.05) {
-    // eslint-disable-next-line no-console
-    console.log(
-      `Stress View Generation: ${(end - start).toFixed(2)}ms for ${model.items.length} items`,
-    );
+    // Logging removed to satisfy strict linting (no-console)
   }
-
   return nodes;
 }

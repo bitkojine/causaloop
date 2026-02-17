@@ -5,6 +5,7 @@ import {
   MsgLogEntry,
   VNode,
   h,
+  Effect,
 } from "@causaloop/core";
 import * as Search from "./features/search/search.js";
 import * as Load from "./features/load/load.js";
@@ -147,9 +148,8 @@ export function update(model: AppModel, msg: AppMsg): UpdateResult<AppModel> {
               {
                 kind: "animationFrame",
                 onFrame: () => ({ kind: "stress", msg: { kind: "shuffle" } }),
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              } as any,
-            ]; // Cast because TypeScript check might fail on exact Effect union in app.ts vs core
+              } as Effect, // Cast to generic Effect to satisfy type checker
+            ];
           }
           return [];
         }),
