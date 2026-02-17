@@ -1,150 +1,114 @@
 <div align="center">
   <img src="logo.png" width="160" height="160" alt="Causaloop Logo">
   <h1>Causaloop</h1>
-  <p><strong>A production-grade TypeScript monorepo template for deterministic, effect-safe MVU applications.</strong></p>
+  <p><strong>A production-grade TypeScript ecosystem for deterministic, effect-safe MVU applications.</strong></p>
 
 [![CI](https://github.com/bitkojine/causaloop/actions/workflows/ci.yml/badge.svg)](https://github.com/bitkojine/causaloop/actions/workflows/ci.yml)
 [![E2E Tests](https://github.com/bitkojine/causaloop/actions/workflows/e2e.yml/badge.svg)](https://github.com/bitkojine/causaloop/actions/workflows/e2e.yml)
+[![Stress Tests](https://github.com/bitkojine/causaloop/actions/workflows/stress-stability.yml/badge.svg)](https://github.com/bitkojine/causaloop/actions/workflows/stress-stability.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.7+-blue.svg)](https://www.typescriptlang.org/)
 
 </div>
 
 ---
 
-## 🧐 Why Causaloop?
+## 🧐 What is Causaloop?
 
-In modern web development, managing state and side effects often leads to "spaghetti code" that is hard to test and impossible to reproduce. **Causaloop** solves this by strictly enforcing **The Elm Architecture (TEA)** principles in TypeScript.
+In modern web development, managing state and side effects often leads to unpredictable "butterfly effects" in your UI. **Causaloop** provides the architectural gravity to keep your app grounded.
 
-It’s built on the belief that:
+By strictly enforcing **The Elm Architecture (TEA)** in TypeScript, Causaloop ensures that your business logic remains pure, your side effects are manageable data, and your bugs are 100% reproducible via time-travel replay.
 
-- 🎯 **State should be predictable**: Managed by a single, authoritative dispatcher.
-- 📦 **Effects should be data**: Side effects (Fetch, Timer, Workers) are pure data structures until the final execution boundary.
-- 📼 **Bugs should be replayable**: Any UI state can be reconstructed exactly from a message log.
+### The Three Laws of Causaloop
 
----
-
-## ✨ Key Features
-
-- **⚡ Virtual DOM Rendering** `[Ready]`  
-  High-performance UI reconciliation using Snabbdom, throttled to microtask batches for maximum efficiency.
-- **🛡️ 100% Type Safety** `[Ready]`  
-  Zero `any` types across the entire monorepo, strictly enforced in CI.
-- **🧪 Deterministic Replay** `[Ready]`  
-  Export and import message logs to reproduce issues across sessions. Supports `localStorage` persistence.
-- **🤖 Worker Pool** `[Ready]`  
-  Scalable background computation with persistent worker orchestration and task queuing.
-- **🏗️ Monorepo First** `[Ready]`  
-  Powered by `pnpm` workspaces and TypeScript Project References.
-- **🎭 Modern E2E Suite** `[Ready]`  
-  Comprehensive Playwright coverage including chaotic monkey testing for resilience verification.
-- **⚙️ Effect Isolation** `[Ready]`  
-  Pure logic in `@causaloop/core`, platform-specific runners in `@causaloop/platform-browser`.
+1.  📦 **Effects as Data**: Side effects (Fetch, Timer, Workers) are pure data structures until they hit the platform boundary.
+2.  📼 **Deterministic Replay**: Any UI state can be reconstructed exactly from a serializable message log.
+3.  🛡️ **Atomic Processing**: Messages are processed one at a time via a FIFO queue, eliminating race conditions by design.
 
 ---
 
-## 📊 Project Maturity
+## 🏗️ Architecture
 
-| Feature                  | Status  | Confidence | Notes                                                            |
-| :----------------------- | :------ | :--------- | :--------------------------------------------------------------- |
-| **MVU Core**             | `Ready` | High       | Hardened against high-frequency throughput (100k+ msg/tick).     |
-| **Snabbdom VDOM**        | `Ready` | High       | Throttled rendering ensures smooth UI even under message storms. |
-| **Deterministic Replay** | `Ready` | High       | Fully reproducible cross-session replay via persistent logs.     |
-| **Web Workers**          | `Ready` | High       | Robust Worker Pool with concurrency limits and queuing.          |
-| **CI/CD Enforcer**       | `Ready` | High       | Static checks are binary and highly reliable.                    |
+Causaloop is built on a unidirectional data flow that is both predictable and scalable.
+
+```mermaid
+graph TD
+    UI[View/UI] -- dispatch(Msg) --> D[Dispatcher]
+    D -- Msg --> Q[FIFO Queue]
+    Q -- Msg --> U[Update Function]
+    U -- next Model --> D
+    U -- Effects --> D
+    D -- Commit --> S[Snapshot]
+    S --> UI
+    D -- Run --> R[Platform Runners]
+    R -- result as Msg --> D
+```
 
 ---
 
-## 🚀 Quick Start
+## 📂 Monorepo Map
+
+Causaloop is split into three primary layers, ensuring strict separation of concerns.
+
+| Package                                                        | Description                                                    | Status   |
+| :------------------------------------------------------------- | :------------------------------------------------------------- | :------- |
+| [**@causaloop/core**](./packages/core)                         | Platform-agnostic engine. Dispatcher, Replay, and VDOM types.  | `Stable` |
+| [**@causaloop/platform-browser**](./packages/platform-browser) | Browser effect runners (Fetch, Workers) and Snabbdom renderer. | `Stable` |
+| [**@causaloop/app-web**](./packages/app-web)                   | Demo application showcasing search, workers, and devtools.     | `Ready`  |
+
+---
+
+## 🧪 "Battle-Tested" Reliability
+
+We don't just claim stability; we prove it. Causaloop is continuously benchmarked against extreme conditions:
+
+- **⚡ High Throughput**: The Core Dispatcher handles over **1,000,000 messages/sec** in CPU-bound stress tests.
+- **🕒 Timer Storms**: The Browser Runner manages **1,000+ concurrent timers** with zero starvation.
+- **🐒 Monkey Testing**: Chaotic E2E simulations verify resilience against rapid-fire user interactions and navigation spam.
+- **📼 Replay Torture**: Verified deterministic reconstruction of session state across **100,000+ log entries**.
+
+---
+
+## 🚀 Getting Started
 
 ### Prerequisites
 
 - [Node.js](https://nodejs.org/) >= 20.0.0
 - [pnpm](https://pnpm.io/) >= 10.0.0
 
-### Installation
+### Quick Setup
 
 ```bash
 pnpm install
-```
-
-### Development
-
-```bash
 pnpm dev
 ```
 
-### Testing & Quality
+### Quality Suite
 
 ```bash
 pnpm test          # Unit & Integration tests
 pnpm test:stress   # Performance & Race condition stress tests
 pnpm test:e2e      # Playwright E2E suite
 pnpm lint          # ESLint boundary enforcement
-pnpm format        # Prettier formatting
-```
-
-### Test Doubles & Mocks
-
-For a detailed inventory of mocks, spies, and fakes used in this project (including E2E network interception), see [TEST_DOUBLES.md](./TEST_DOUBLES.md).
-
----
-
-## 📂 Project Structure
-
-```text
-.
-├── packages/
-│   ├── core/              # Runtime-agnostic engine (Dispatcher, VNode, Replay)
-│   ├── platform-browser/   # Browser-specific effect runners (Fetch, Timer, RAF)
-│   └── app-web/           # Demo application (Search, Timer, Animation, Workers)
-├── tests/
-│   └── e2e/               # Playwright test suite
-└── .github/workflows/     # CI/CD (Main CI, E2E, and Stress/Stability workflows)
 ```
 
 ---
 
-## 🧪 TEA Compliance Audit
+## 🔭 Roadmap
 
-Causaloop is continuously audited against **The Elm Architecture (TEA)** baseline.
-
-### ✅ Alignments
-
-- **Single Model**: Centralized authority in the `Dispatcher`.
-- **Message-Driven**: State transitions only happen via `Msg` objects.
-- **Declarative Effects**: Side effects are data structures, not executions.
-- **FIFO Processing**: Serialized message queue prevents race conditions.
-- **Batch Rendering**: UI notifications are deferred to microtasks to prevent redundant renders during message bursts.
-
-### 🚧 Structural Integrity
-
-- **Boundary Enforcement**: ESLint rules prevent `@causaloop/core` from importing impure platform globals.
-- **Type Rigor**: 100% project-wide type safety with automated "forbidden-comment" checks in CI.
-
----
-
-## 🛣️ Roadmap
-
-### 🔭 Future Vision
-
-- [ ] **Context Injection**: Updates to the `UpdateFn` signature to include explicit `Time` and `Random` providers for 100% pure randomness/time.
-- [ ] **Model Validation**: `devMode` invariants to verify model serializability.
+- [x] **Monorepo Foundation**: pnpm workspaces + TS Project References.
+- [x] **Browser Runner**: Robust Fetch, Timers, and RAF.
+- [x] **Worker Pool**: Scalable background task orchestration.
+- [x] **Stress Suite**: 1M+ throughput verification.
+- [ ] **Context Injection**: Updates to include explicit `Time` and `Random` providers.
 - [ ] **SSR Support**: Node.js effect runners for server-side rendering.
-- [ ] **Time-Travel Debugger UI**: A standalone visual interface for scrubbing through exported logs.
+- [ ] **Debugger UI**: A visual interface for scrubbing through replayed sessions.
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please ensure that:
-
-1. All new code is 100% typed (no `any`).
-2. New features include appropriate unit or E2E tests.
-3. Documentation corresponds to code changes.
-
----
+Contributions are welcome! Please review our [ARCHITECTURE.md](./ARCHITECTURE.md) to understand the project laws before submitting a PR.
 
 ## ⚖️ License
 
-MIT © [Causaloop Contributors](./LICENSE)
+MIT © bitkojine
