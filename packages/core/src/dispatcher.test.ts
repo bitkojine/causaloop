@@ -1,6 +1,6 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { createDispatcher } from './dispatcher.js';
-import { Model, Msg, Effect, UpdateResult } from './types.js';
+import { Model, Effect, UpdateResult } from './types.js';
 
 describe('Dispatcher', () => {
     interface TestModel extends Model {
@@ -15,7 +15,9 @@ describe('Dispatcher', () => {
             switch (msg.kind) {
                 case 'increment':
                     return { model: { ...model, count: model.count + 1 }, effects: [] };
-                default:
+                case 'nested':
+                    return { model, effects: [] };
+                case 'error':
                     return { model, effects: [] };
             }
         };
@@ -41,7 +43,7 @@ describe('Dispatcher', () => {
                     return { model: { ...model, history: [...model.history, 'nested'] }, effects: [] };
                 case 'increment':
                     return { model: { ...model, count: model.count + 1 }, effects: [] };
-                default:
+                case 'error':
                     return { model, effects: [] };
             }
         };
@@ -62,7 +64,7 @@ describe('Dispatcher', () => {
     });
 
     it('should deep-freeze model in dev mode', () => {
-        const update = (model: TestModel, msg: TestMsg): UpdateResult<TestModel> => {
+        const update = (model: TestModel, _msg: TestMsg): UpdateResult<TestModel> => {
             return { model, effects: [] };
         };
 
@@ -73,9 +75,9 @@ describe('Dispatcher', () => {
             devMode: true,
         });
 
-        const snapshot = dispatcher.getSnapshot();
+        const snapshot = dispatcher.getSnapshot() as Record<string, unknown>;
         expect(() => {
-            (snapshot as any).count = 10;
+            snapshot.count = 10;
         }).toThrow();
     });
 });

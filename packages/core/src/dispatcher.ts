@@ -31,10 +31,13 @@ export function createDispatcher<M extends Model, G extends Msg, E extends Effec
 
     const time = options.timeProvider || { now: () => Date.now() };
 
-    const deepFreeze = (obj: any): any => {
+    const deepFreeze = (obj: unknown): unknown => {
         if (options.devMode && obj && typeof obj === 'object' && !Object.isFrozen(obj)) {
             Object.freeze(obj);
-            Object.getOwnPropertyNames(obj).forEach((prop) => deepFreeze(obj[prop]));
+            Object.getOwnPropertyNames(obj).forEach((prop) => {
+                const value = (obj as Record<string, unknown>)[prop];
+                deepFreeze(value);
+            });
         }
         return obj;
     };

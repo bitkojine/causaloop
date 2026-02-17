@@ -1,13 +1,13 @@
-import { Model, Msg, UpdateResult, FetchEffect, Snapshot, CancelEffect } from '@causaloop/core';
+import { Model, UpdateResult, FetchEffect, Snapshot, CancelEffect } from '@causaloop/core';
 
 export interface LoadModel extends Model {
     readonly status: 'idle' | 'loading' | 'success' | 'error' | 'cancelled';
-    readonly data: any | null;
+    readonly data: unknown | null;
 }
 
 export type LoadMsg =
     | { kind: 'load_requested' }
-    | { kind: 'load_succeeded'; data: any }
+    | { kind: 'load_succeeded'; data: unknown }
     | { kind: 'load_failed'; error: Error }
     | { kind: 'load_cancelled' };
 
@@ -25,7 +25,7 @@ export function update(model: LoadModel, msg: LoadMsg): UpdateResult<LoadModel> 
                 purpose: 'Load big data',
                 url: 'https://jsonplaceholder.typicode.com/photos', // Usually large
                 abortKey: 'bigload',
-                onSuccess: (data: any) => ({ kind: 'load_succeeded', data }),
+                onSuccess: (data: unknown) => ({ kind: 'load_succeeded', data }),
                 onError: (error: Error) => ({ kind: 'load_failed', error }),
             };
             return {

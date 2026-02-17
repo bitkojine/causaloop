@@ -51,7 +51,7 @@ export class BrowserRunner {
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
                 const data = expect === 'json' ? await response.json() : await response.text();
-                dispatch(effect.onSuccess(data as unknown as any));
+                dispatch(effect.onSuccess(data as unknown));
             })
             .catch((error) => {
                 if (Object.isFrozen(error)) {

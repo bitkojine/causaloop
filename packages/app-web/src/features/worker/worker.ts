@@ -1,4 +1,4 @@
-import { Model, Msg, UpdateResult, Snapshot, WorkerEffect } from '@causaloop/core';
+import { Model, UpdateResult, Snapshot, WorkerEffect } from '@causaloop/core';
 
 export interface WorkerModel extends Model {
     readonly result: number | null;
@@ -26,7 +26,7 @@ export function update(model: WorkerModel, msg: WorkerMsg): UpdateResult<WorkerM
                 taskId: String(nextTaskId),
                 scriptUrl: new URL('./compute.worker.ts', import.meta.url).href,
                 payload: msg.n,
-                onSuccess: (res) => ({ kind: 'compute_succeeded', result: res, taskId: nextTaskId }),
+                onSuccess: (res: unknown) => ({ kind: 'compute_succeeded', result: res as number, taskId: nextTaskId }),
                 onError: (err) => ({ kind: 'compute_failed', error: err, taskId: nextTaskId }),
             };
             return {

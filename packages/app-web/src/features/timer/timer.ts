@@ -1,4 +1,4 @@
-import { Model, Msg, UpdateResult, Snapshot, TimerEffect, CancelEffect } from '@causaloop/core';
+import { Model, UpdateResult, Snapshot, TimerEffect } from '@causaloop/core';
 
 export interface TimerModel extends Model {
     readonly count: number;
@@ -46,7 +46,7 @@ export function view(snapshot: Snapshot<TimerModel>, dispatch: (msg: TimerMsg) =
     container.appendChild(h3);
 
     const countPara = document.createElement('p');
-    countPara.innerText = `Count: ${snapshot.count}`;
+    countPara.innerText = `Count: ${snapshot.count} `;
     container.appendChild(countPara);
 
     const btnContainer = document.createElement('div');

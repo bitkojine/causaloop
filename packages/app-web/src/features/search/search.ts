@@ -1,15 +1,15 @@
-import { Model, Msg, UpdateResult, FetchEffect, Snapshot } from '@causaloop/core';
+import { Model, UpdateResult, FetchEffect, Snapshot } from '@causaloop/core';
 
 export interface SearchModel extends Model {
     readonly query: string;
     readonly status: 'idle' | 'loading' | 'success' | 'error' | 'stale';
-    readonly results: any[];
+    readonly results: unknown[];
     readonly lastRequestId: number;
 }
 
 export type SearchMsg =
     | { kind: 'search_changed'; query: string }
-    | { kind: 'search_succeeded'; results: any; requestId: number }
+    | { kind: 'search_succeeded'; results: unknown; requestId: number }
     | { kind: 'search_failed'; error: Error; requestId: number };
 
 export const initialModel: SearchModel = {
@@ -29,7 +29,7 @@ export function update(model: SearchModel, msg: SearchMsg): UpdateResult<SearchM
                 purpose: 'Search query',
                 url: `https://jsonplaceholder.typicode.com/posts?q=${encodeURIComponent(msg.query)}`,
                 abortKey: 'search',
-                onSuccess: (data: any) => ({ kind: 'search_succeeded', results: data, requestId: nextRequestId }),
+                onSuccess: (data: unknown) => ({ kind: 'search_succeeded', results: data, requestId: nextRequestId }),
                 onError: (error: Error) => ({ kind: 'search_failed', error: error, requestId: nextRequestId }),
             };
             return {
@@ -42,7 +42,7 @@ export function update(model: SearchModel, msg: SearchMsg): UpdateResult<SearchM
                 return { model, effects: [] }; // Ignore stale
             }
             return {
-                model: { ...model, status: 'success', results: msg.results },
+                model: { ...model, status: 'success', results: msg.results as unknown[] },
                 effects: [],
             };
         case 'search_failed':
@@ -77,8 +77,8 @@ export function view(snapshot: Snapshot<SearchModel>, dispatch: (msg: SearchMsg)
 
     const resultsDiv = document.createElement('div');
     resultsDiv.className = 'log';
-    if (snapshot.results.length > 0) {
-        resultsDiv.innerText = snapshot.results.map((r: any) => r.title).join('\n');
+    if (Array.isArray(snapshot.results) && snapshot.results.length > 0) {
+        resultsDiv.innerText = snapshot.results.map((r: unknown) => (r as { title: string }).title).join('\n');
     } else if (snapshot.status === 'success') {
         resultsDiv.innerText = 'No results found.';
     }

@@ -1,4 +1,4 @@
-import { Model, Msg, UpdateResult, Snapshot, MsgLogEntry, replay } from '@causaloop/core';
+import { Model, UpdateResult, Snapshot, MsgLogEntry } from '@causaloop/core';
 
 export interface DevtoolsModel extends Model {
     readonly isOpen: boolean;
@@ -7,7 +7,7 @@ export interface DevtoolsModel extends Model {
 
 export type DevtoolsMsg =
     | { kind: 'devtools_toggled' }
-    | { kind: 'replay_triggered'; log: MsgLogEntry[]; initialModel: any }
+    | { kind: 'replay_triggered'; log: MsgLogEntry[]; initialModel: Snapshot<Model> }
     | { kind: 'replay_completed'; success: boolean };
 
 export const initialModel: DevtoolsModel = {
@@ -34,11 +34,11 @@ export function update(model: DevtoolsModel, msg: DevtoolsMsg): UpdateResult<Dev
     }
 }
 
-export function view(
+export function view<M extends Model>(
     snapshot: Snapshot<DevtoolsModel>,
     msgLog: readonly MsgLogEntry[],
-    currentModel: any,
-    onReplay: (log: MsgLogEntry[], initialModel: any) => void,
+    currentModel: Snapshot<M>,
+    onReplay: (log: MsgLogEntry[], initialModel: Snapshot<M>) => void,
     dispatch: (msg: DevtoolsMsg) => void
 ): HTMLElement {
     const container = document.createElement('div');

@@ -6,7 +6,15 @@ import globals from 'globals';
 
 export default tseslint.config(
     {
-        ignores: ['**/dist/**', 'node_modules/**', 'vitest.config.ts', 'eslint.config.js'],
+        ignores: [
+            '**/dist/**',
+            'node_modules/**',
+            'vitest.config.ts',
+            'eslint.config.js',
+            '**/vite.config.ts',
+            '**/*.worker.ts',
+            '**/integration.test.ts'
+        ],
     },
     eslint.configs.recommended,
     ...tseslint.configs.recommended,
@@ -26,7 +34,10 @@ export default tseslint.config(
         },
         settings: {
             'import/resolver': {
-                typescript: true,
+                typescript: {
+                    alwaysTryTypes: true,
+                    project: ['./packages/*/tsconfig.json', './tsconfig.json'],
+                },
             },
             'boundaries/elements': [
                 {
@@ -44,6 +55,8 @@ export default tseslint.config(
             ],
         },
         rules: {
+            '@typescript-eslint/no-explicit-any': 'error',
+            '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
             '@typescript-eslint/no-floating-promises': 'error',
             '@typescript-eslint/switch-exhaustiveness-check': 'error',
             'no-console': ['warn', { allow: ['warn', 'error', 'info'] }],

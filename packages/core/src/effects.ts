@@ -16,7 +16,7 @@ export interface FetchEffect<TMsg extends Msg = Msg> extends Effect {
     readonly expect?: 'json' | 'text' | 'arrayBuffer';
     readonly timeoutMs?: number;
     readonly abortKey?: string;
-    readonly onSuccess: (data: any) => TMsg;
+    readonly onSuccess: (data: unknown) => TMsg;
     readonly onError: (error: Error) => TMsg;
 }
 

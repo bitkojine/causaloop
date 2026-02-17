@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { initialModel, update, AppMsg } from './src/app.js';
-import { replay } from '@causaloop/core';
+import { replay, MsgLogEntry } from '@causaloop/core';
 
 describe('Causaloop Integration', () => {
     it('Search: should ignore stale responses', () => {
@@ -28,18 +28,18 @@ describe('Causaloop Integration', () => {
         // Stage 1: Request load
         let state = update(initialModel, { kind: 'load', msg: { kind: 'load_requested' } });
         expect(state.model.load.status).toBe('loading');
-        expect(state.effects.find((e: any) => e.original.kind === 'fetch' && e.original.abortKey === 'bigload')).toBeDefined();
+        expect(state.effects.find((e) => (e as any).original?.kind === 'fetch' && (e as any).original?.abortKey === 'bigload')).toBeDefined();
 
         // Stage 2: Cancel
         state = update(state.model, { kind: 'load', msg: { kind: 'load_cancelled' } });
         expect(state.model.load.status).toBe('cancelled');
-        expect(state.effects.find((e: any) => e.original.kind === 'cancel' && e.original.abortKey === 'bigload')).toBeDefined();
+        expect(state.effects.find((e) => (e as any).original?.kind === 'cancel' && (e as any).original?.abortKey === 'bigload')).toBeDefined();
     });
 
     it('Replay: should yield identical final model', () => {
         // 1. Initial
         let state = initialModel;
-        const log: any[] = [];
+        const log: MsgLogEntry[] = [];
         const push = (msg: AppMsg) => {
             log.push({ msg, ts: Date.now() });
             const { model } = update(state, msg);

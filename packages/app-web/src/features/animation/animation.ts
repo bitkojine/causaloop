@@ -1,4 +1,4 @@
-import { Model, Msg, UpdateResult, Snapshot, AnimationFrameEffect } from '@causaloop/core';
+import { Model, UpdateResult, Snapshot, AnimationFrameEffect } from '@causaloop/core';
 
 export interface AnimationModel extends Model {
     readonly angle: number;

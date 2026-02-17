@@ -1,4 +1,4 @@
-import { Model, Msg, UpdateResult, Snapshot } from '@causaloop/core';
+import { Model, UpdateResult, Snapshot, MsgLogEntry } from '@causaloop/core';
 import * as Search from './features/search/search.js';
 import * as Load from './features/load/load.js';
 import * as Timer from './features/timer/timer.js';
@@ -40,42 +40,66 @@ export function update(model: AppModel, msg: AppMsg): UpdateResult<AppModel> {
             const { model: searchModel, effects } = Search.update(model.search, msg.msg);
             return {
                 model: { ...model, search: searchModel },
-                effects: effects.map((e: any) => ({ ...e, original: e, wrap: (m: Search.SearchMsg) => ({ kind: 'search', msg: m }) })),
+                effects: effects.map((e) => ({
+                    kind: 'wrapper',
+                    original: e,
+                    wrap: (m: Search.SearchMsg): AppMsg => ({ kind: 'search', msg: m })
+                })),
             };
         }
         case 'load': {
             const { model: loadModel, effects } = Load.update(model.load, msg.msg);
             return {
                 model: { ...model, load: loadModel },
-                effects: effects.map((e: any) => ({ ...e, original: e, wrap: (m: Load.LoadMsg) => ({ kind: 'load', msg: m }) })),
+                effects: effects.map((e) => ({
+                    kind: 'wrapper',
+                    original: e,
+                    wrap: (m: Load.LoadMsg): AppMsg => ({ kind: 'load', msg: m })
+                })),
             };
         }
         case 'timer': {
             const { model: timerModel, effects } = Timer.update(model.timer, msg.msg);
             return {
                 model: { ...model, timer: timerModel },
-                effects: effects.map((e: any) => ({ ...e, original: e, wrap: (m: Timer.TimerMsg) => ({ kind: 'timer', msg: m }) })),
+                effects: effects.map((e) => ({
+                    kind: 'wrapper',
+                    original: e,
+                    wrap: (m: Timer.TimerMsg): AppMsg => ({ kind: 'timer', msg: m })
+                })),
             };
         }
         case 'animation': {
             const { model: animModel, effects } = Animation.update(model.animation, msg.msg);
             return {
                 model: { ...model, animation: animModel },
-                effects: effects.map((e: any) => ({ ...e, original: e, wrap: (m: Animation.AnimationMsg) => ({ kind: 'animation', msg: m }) })),
+                effects: effects.map((e) => ({
+                    kind: 'wrapper',
+                    original: e,
+                    wrap: (m: Animation.AnimationMsg): AppMsg => ({ kind: 'animation', msg: m })
+                })),
             };
         }
         case 'worker': {
             const { model: workerModel, effects } = WorkerFeature.update(model.worker, msg.msg);
             return {
                 model: { ...model, worker: workerModel },
-                effects: effects.map((e: any) => ({ ...e, original: e, wrap: (m: WorkerFeature.WorkerMsg) => ({ kind: 'worker', msg: m }) })),
+                effects: effects.map((e) => ({
+                    kind: 'wrapper',
+                    original: e,
+                    wrap: (m: WorkerFeature.WorkerMsg): AppMsg => ({ kind: 'worker', msg: m })
+                })),
             };
         }
         case 'devtools': {
             const { model: devtoolsModel, effects } = Devtools.update(model.devtools, msg.msg);
             return {
                 model: { ...model, devtools: devtoolsModel },
-                effects: effects.map((e: any) => ({ ...e, original: e, wrap: (m: Devtools.DevtoolsMsg) => ({ kind: 'devtools', msg: m }) })),
+                effects: effects.map((e) => ({
+                    kind: 'wrapper',
+                    original: e,
+                    wrap: (m: Devtools.DevtoolsMsg): AppMsg => ({ kind: 'devtools', msg: m })
+                })),
             };
         }
     }
@@ -83,9 +107,9 @@ export function update(model: AppModel, msg: AppMsg): UpdateResult<AppModel> {
 
 export function view(
     snapshot: Snapshot<AppModel>,
-    msgLog: readonly any[],
+    msgLog: readonly MsgLogEntry[],
     dispatch: (msg: AppMsg) => void,
-    onReplay: (log: any[], model: any) => void
+    onReplay: (log: MsgLogEntry[], model: Snapshot<AppModel>) => void
 ): HTMLElement {
     const container = document.createElement('div');
 
