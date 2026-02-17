@@ -55,12 +55,34 @@ export const onReplay = (log: MsgLogEntry[], model: Snapshot<AppModel>) => {
     update,
     log,
   });
-  const isMatched =
-    JSON.stringify(finalSnapshot) === JSON.stringify(dispatcher.getSnapshot());
+  const current = dispatcher.getSnapshot();
+  const isMatched = JSON.stringify(finalSnapshot) === JSON.stringify(current);
+
+  const diffs: Array<{ key: string; expected: string; actual: string }> = [];
+  if (!isMatched) {
+    const replayedKeys = Object.keys(finalSnapshot);
+    for (const key of replayedKeys) {
+      const replayedVal = JSON.stringify(finalSnapshot[key as keyof AppModel]);
+      const currentVal = JSON.stringify(current[key as keyof AppModel]);
+      if (replayedVal !== currentVal) {
+        diffs.push({
+          key,
+          expected: replayedVal.slice(0, 120),
+          actual: currentVal.slice(0, 120),
+        });
+      }
+    }
+  }
+
   console.info("[REPLAY] Result:", isMatched ? "MATCH" : "MISMATCH");
   dispatcher.dispatch({
     kind: "devtools",
-    msg: { kind: "replay_completed", success: isMatched },
+    msg: {
+      kind: "replay_completed",
+      success: isMatched,
+      diffs,
+      logLength: log.length,
+    },
   });
 };
 const savedLogStr = localStorage.getItem("causaloop_log_v1");
