@@ -1,72 +1,90 @@
-import { Model, UpdateResult, Snapshot, TimerEffect } from '@causaloop/core';
+import {
+  Model,
+  UpdateResult,
+  Snapshot,
+  TimerEffect,
+  VNode,
+  h,
+} from "@causaloop/core";
 
 export interface TimerModel extends Model {
-    readonly count: number;
-    readonly isRunning: boolean;
+  readonly count: number;
+  readonly isRunning: boolean;
 }
 
 export type TimerMsg =
-    | { kind: 'timer_started' }
-    | { kind: 'timer_ticked' }
-    | { kind: 'timer_stopped' };
+  | { kind: "timer_started" }
+  | { kind: "timer_ticked" }
+  | { kind: "timer_stopped" };
 
 export const initialModel: TimerModel = {
-    count: 0,
-    isRunning: false,
+  count: 0,
+  isRunning: false,
 };
 
-export function update(model: TimerModel, msg: TimerMsg): UpdateResult<TimerModel> {
-    switch (msg.kind) {
-        case 'timer_started':
-            if (model.isRunning) return { model, effects: [] };
-            return {
-                model: { ...model, isRunning: true },
-                effects: [{ kind: 'timer', timeoutMs: 1000, onTimeout: () => ({ kind: 'timer_ticked' }) } as TimerEffect<TimerMsg>],
-            };
-        case 'timer_ticked':
-            if (!model.isRunning) return { model, effects: [] };
-            return {
-                model: { ...model, count: model.count + 1 },
-                effects: [{ kind: 'timer', timeoutMs: 1000, onTimeout: () => ({ kind: 'timer_ticked' }) } as TimerEffect<TimerMsg>],
-            };
-        case 'timer_stopped':
-            return {
-                model: { ...model, isRunning: false },
-                effects: [], // Timer effect in platform-browser should probably support cancellation too, but for simplicity we rely on the reducer ignoring ticks if not running
-            };
-    }
+export function update(
+  model: TimerModel,
+  msg: TimerMsg,
+): UpdateResult<TimerModel> {
+  switch (msg.kind) {
+    case "timer_started":
+      if (model.isRunning) return { model, effects: [] };
+      return {
+        model: { ...model, isRunning: true },
+        effects: [
+          {
+            kind: "timer",
+            timeoutMs: 1000,
+            onTimeout: () => ({ kind: "timer_ticked" }),
+          } as TimerEffect<TimerMsg>,
+        ],
+      };
+    case "timer_ticked":
+      if (!model.isRunning) return { model, effects: [] };
+      return {
+        model: { ...model, count: model.count + 1 },
+        effects: [
+          {
+            kind: "timer",
+            timeoutMs: 1000,
+            onTimeout: () => ({ kind: "timer_ticked" }),
+          } as TimerEffect<TimerMsg>,
+        ],
+      };
+    case "timer_stopped":
+      return {
+        model: { ...model, isRunning: false },
+        effects: [],
+      };
+  }
 }
 
-export function view(snapshot: Snapshot<TimerModel>, dispatch: (msg: TimerMsg) => void): HTMLElement {
-    const container = document.createElement('div');
-    container.className = 'feature-container';
-
-    const h3 = document.createElement('h3');
-    h3.innerText = 'Feature C: Timer';
-    container.appendChild(h3);
-
-    const countPara = document.createElement('p');
-    countPara.innerText = `Count: ${snapshot.count} `;
-    container.appendChild(countPara);
-
-    const btnContainer = document.createElement('div');
-    btnContainer.className = 'btn-group';
-
-    const startBtn = document.createElement('button');
-    startBtn.className = 'start-btn';
-    startBtn.innerText = 'Start Timer';
-    startBtn.onclick = () => dispatch({ kind: 'timer_started' });
-    startBtn.disabled = snapshot.isRunning;
-    btnContainer.appendChild(startBtn);
-
-    const stopBtn = document.createElement('button');
-    stopBtn.className = 'stop-btn';
-    stopBtn.innerText = 'Stop Timer';
-    stopBtn.onclick = () => dispatch({ kind: 'timer_stopped' });
-    stopBtn.disabled = !snapshot.isRunning;
-    btnContainer.appendChild(stopBtn);
-
-    container.appendChild(btnContainer);
-
-    return container;
+export function view(
+  snapshot: Snapshot<TimerModel>,
+  dispatch: (msg: TimerMsg) => void,
+): VNode {
+  return h("div", { class: { "feature-container": true } }, [
+    h("h3", {}, ["Feature C: Timer"]),
+    h("p", {}, [`Count: ${snapshot.count} `]),
+    h("div", { class: { "btn-group": true } }, [
+      h(
+        "button",
+        {
+          class: { "start-btn": true },
+          props: { disabled: snapshot.isRunning },
+          on: { click: () => dispatch({ kind: "timer_started" }) },
+        },
+        ["Start Timer"],
+      ),
+      h(
+        "button",
+        {
+          class: { "stop-btn": true },
+          props: { disabled: !snapshot.isRunning },
+          on: { click: () => dispatch({ kind: "timer_stopped" }) },
+        },
+        ["Stop Timer"],
+      ),
+    ]),
+  ]);
 }

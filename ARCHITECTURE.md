@@ -28,16 +28,16 @@ graph TD
 
 ## Forbidden Patterns
 
-*   **Storing Promises in Model**: Model must be JSON-serializable.
-*   **Mutating Model**: Model must be treated as immutable outside `update`.
-*   **Dispatching in Update**: `update` must only return effects, not dispatch messages directly.
-*   **Direct Async Calls**: All async operations must go through the `Effect` system and `Runners`.
-*   **Alternative State Management**: Do not use Redux, Zustand, etc. Use the core Dispatcher.
+- **Storing Promises in Model**: Model must be JSON-serializable.
+- **Mutating Model**: Model must be treated as immutable outside `update`.
+- **Dispatching in Update**: `update` must only return effects, not dispatch messages directly.
+- **Direct Async Calls**: All async operations must go through the `Effect` system and `Runners`.
+- **Alternative State Management**: Do not use Redux, Zustand, etc. Use the core Dispatcher.
 
 ## Layer Boundaries
 
-*   `@causaloop/core`: Platform-agnostic logic, types, and dispatcher.
-*   `@causaloop/platform-*`: Platform-specific runners (Browser, VSCode, etc.).
-*   `@causaloop/app-*`: Application code, features, and UI.
+- `@causaloop/core`: Platform-agnostic logic, types, and dispatcher.
+- `@causaloop/platform-*`: Platform-specific runners (Browser, VSCode, etc.).
+- `@causaloop/app-*`: Application code, features, and UI.
 
 `core` must NEVER import from `platform` or `app`. `platform` must NEVER import from `app`.

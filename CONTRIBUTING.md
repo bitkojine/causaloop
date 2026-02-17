@@ -13,11 +13,11 @@ When adding a new feature, follow these steps to maintain architectural integrit
 
 ## Development Workflow
 
-*   `pnpm install`: Install dependencies.
-*   `pnpm dev`: Start development servers.
-*   `pnpm lint`: Run strict linting including boundary checks.
-*   `pnpm test`: Run tests with Vitest.
-*   `pnpm build`: Build all packages.
+- `pnpm install`: Install dependencies.
+- `pnpm dev`: Start development servers.
+- `pnpm lint`: Run strict linting including boundary checks.
+- `pnpm test`: Run tests with Vitest.
+- `pnpm build`: Build all packages.
 
 ## Strict Linting
 

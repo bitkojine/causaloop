@@ -31,37 +31,46 @@ The project uses `pnpm` workspaces and TypeScript project references:
 ## Features & Implementation
 
 ### Stale-Response-Safe Search
-Uses `requestId` correlation to ensure that if multiple search requests are in flight, only the response corresponding to the *latest* request updates the UI state.
+
+Uses `requestId` correlation to ensure that if multiple search requests are in flight, only the response corresponding to the _latest_ request updates the UI state.
 
 ### High-Frequency Animation (Surgical Updates)
+
 In the absence of a Virtual DOM, Causaloop uses a **Surgical Update** pattern for high-frequency state changes (e.g., animations, timers). Instead of nuking and rebuilding the entire component's DOM on every state change, the rendering loop identifies specific elements and updates only the necessary properties (like `style.transform` or `innerText`). This ensures DOM nodes remain stable, preserving focus, selection, and allowing reliable user interaction even during rapid state transitions.
 
 ### Request Cancellation
+
 Demonstrates the use of `AbortController` via the `FetchEffect`. The demo app allows users to trigger a large data fetch and cancel it mid-flight, restoring the system to an `idle` state deterministically.
 
 ### Web Worker Computation
+
 Offloads intensive prime number calculations to a dedicated Web Worker. The transition from `computing` to `done` is handled via message passing, ensuring the UI remains responsive throughout.
 
 ### DevTools & Time Travel
+
 The integrated DevTools panel captures every message dispatched in the system. These logs can be exported to JSON and replayed against the initial state to reproduce any UI state exactly.
 
 ## Getting Started
 
 ### Prerequisites
+
 - Node.js >= 20.0.0
 - pnpm
 
 ### Installation
+
 ```bash
 npx pnpm install
 ```
 
 ### Development
+
 ```bash
 npx pnpm dev
 ```
 
 ### Testing & Linting
+
 ```bash
 npx pnpm test            # Runs Vitest for core and app integration
 npx pnpm lint            # Runs ESLint with boundary enforcement
@@ -106,10 +115,10 @@ This audit evaluates `causaloop` against the baseline principles of **The Elm Ar
 ### 3. Deviations from TEA
 
 - **Construction-based View**: **[CRITICAL]** In Elm, `view` returns a declarative Virtual DOM (`Html msg`). In `causaloop`, `view` functions directly construct and return real `HTMLElement` objects.
-    - **Mitigation**: The project uses a **Surgical Update** pattern in `main.ts` to stabilize DOM nodes during high-frequency updates, bridging the gap between direct DOM manipulation and VDOM reconciliation.
-    - **Reference**: `packages/app-web/src/main.ts` (Surgical rendering logic).
+  - **Mitigation**: The project uses a **Surgical Update** pattern in `main.ts` to stabilize DOM nodes during high-frequency updates, bridging the gap between direct DOM manipulation and VDOM reconciliation.
+  - **Reference**: `packages/app-web/src/main.ts` (Surgical rendering logic).
 - **Logic-Side Effect Wrapping**: Features wrap their own messages in the `update` function.
-    - **Risk**: Manual mapping of effects in `app.ts` adds boilerplate and potential for manual wrapping errors.
+  - **Risk**: Manual mapping of effects in `app.ts` adds boilerplate and potential for manual wrapping errors.
 - **No Native Subscriptions**: `causaloop` lacks a formal `subscriptions` system (like Elm's `Sub msg`). RAF and Timers are modeled as one-shot commands that must be re-queued.
 
 ### 4. Structural Weaknesses
@@ -126,7 +135,7 @@ This audit evaluates `causaloop` against the baseline principles of **The Elm Ar
 ### 6. Dual-Authority Risks
 
 - **DOM state vs Model state**: Because `view` returns live elements, it is possible for a component to hold internal DOM state (e.g., an unmanaged input value).
-    - **Verification**: The comprehensive Playwright E2E suite verifies that the UI state consistently mirrors the intended Model state across complex interactions.
+  - **Verification**: The comprehensive Playwright E2E suite verifies that the UI state consistently mirrors the intended Model state across complex interactions.
 
 ### 7. Enforcement Gaps
 

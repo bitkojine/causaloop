@@ -1,24 +1,25 @@
 {
-    "name": "@causaloop/platform-browser",
-    "version": "0.1.0",
-    "type": "module",
-    "main": "./dist/index.js",
-    "types": "./dist/index.d.ts",
-    "exports": {
-        ".": {
-            "types": "./dist/index.d.ts",
-            "import": "./dist/index.js",
-            "default": "./dist/index.js"
-        }
-    },
-    "dependencies": {
-        "@causaloop/core": "workspace:*"
-    },
-    "scripts": {
-        "build": "tsc",
-        "test": "vitest run"
-    },
-    "devDependencies": {
-        "typescript": "^5.7.3"
+  "name": "@causaloop/platform-browser",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
     }
+  },
+  "dependencies": {
+    "@causaloop/core": "workspace:*",
+    "snabbdom": "^3.6.3"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3"
+  }
 }

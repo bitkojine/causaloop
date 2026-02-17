@@ -12,22 +12,22 @@ export type Model = Record<string, unknown>;
  * Messages are the only way to trigger state changes.
  */
 export interface Msg {
-    readonly kind: string;
+  readonly kind: string;
 }
 
 /**
  * Side effects are expressed as data.
  */
 export interface Effect {
-    readonly kind: string;
+  readonly kind: string;
 }
 
 /**
  * The result of an update function.
  */
 export interface UpdateResult<M extends Model, E extends Effect = Effect> {
-    readonly model: M;
-    readonly effects: readonly E[];
+  readonly model: M;
+  readonly effects: readonly E[];
 }
 
 /**
@@ -39,22 +39,22 @@ export type Snapshot<M extends Model> = Readonly<M>;
  * The pure update function.
  */
 export type UpdateFn<M extends Model, G extends Msg, E extends Effect> = (
-    model: M,
-    msg: G
+  model: M,
+  msg: G,
 ) => UpdateResult<M, E>;
 
 /**
  * Providers for deterministic execution.
  */
 export interface TimeProvider {
-    now(): number;
+  now(): number;
 }
 
 export interface RandomProvider {
-    random(): number;
+  random(): number;
 }
 
 export interface MsgLogEntry {
-    readonly msg: Msg;
-    readonly ts: number;
+  readonly msg: Msg;
+  readonly ts: number;
 }
