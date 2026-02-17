@@ -112,7 +112,9 @@ export function view(
           }),
       },
     }),
-    h("p", {}, [`Status: ${snapshot.status} (ID: ${snapshot.lastRequestId})`]),
+    h("p", {}, [
+      `Search status: ${snapshot.status} (ID: ${snapshot.lastRequestId})`,
+    ]),
     h("div", { class: { log: true } }, [resultsText]),
   ]);
 }
