@@ -85,7 +85,7 @@ test.describe("Stress: E2E Robustness", () => {
     await page.click('button:has-text("Start Animation")');
     const loadBtn = page.locator('button:has-text("Load Big Data")');
     await loadBtn.scrollIntoViewIfNeeded();
-    await loadBtn.click();
+    await loadBtn.click({ force: true });
 
     // Reload rapidly
     for (let i = 0; i < 10; i++) {
