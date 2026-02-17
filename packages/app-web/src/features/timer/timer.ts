@@ -72,7 +72,12 @@ export function view(
         "button",
         {
           class: { "start-btn": true },
-          props: { disabled: snapshot.isRunning },
+          props: {
+            disabled: snapshot.isRunning,
+          },
+          attrs: {
+            "aria-label": "Start the timer",
+          },
           on: { click: () => dispatch({ kind: "timer_started" }) },
         },
         ["Start Timer"],
@@ -81,7 +86,12 @@ export function view(
         "button",
         {
           class: { "stop-btn": true },
-          props: { disabled: !snapshot.isRunning },
+          props: {
+            disabled: !snapshot.isRunning,
+          },
+          attrs: {
+            "aria-label": "Stop the timer",
+          },
           on: { click: () => dispatch({ kind: "timer_stopped" }) },
         },
         ["Stop Timer"],

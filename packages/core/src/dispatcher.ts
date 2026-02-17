@@ -21,6 +21,7 @@ export interface DispatcherOptions<
   readonly devMode?: boolean;
   readonly timeProvider?: TimeProvider;
   readonly randomProvider?: RandomProvider;
+  readonly maxLogSize?: number;
 }
 export interface Dispatcher<M extends Model, G extends Msg> {
   dispatch(msg: G): void;
@@ -42,6 +43,7 @@ export function createDispatcher<
   let isShutdown = false;
   let pendingNotify = false;
   const time = options.timeProvider || { now: () => Date.now() };
+  const maxLogSize = options.maxLogSize ?? 10000;
   const deepFreeze = (obj: unknown): unknown => {
     if (
       options.devMode &&
@@ -78,6 +80,9 @@ export function createDispatcher<
       while (queue.length > 0) {
         const msg = queue.shift()!;
         msgLog.push({ msg, ts: time.now() });
+        if (msgLog.length > maxLogSize) {
+          msgLog.shift();
+        }
         const { model: nextModel, effects } = options.update(currentModel, msg);
         if (options.devMode) {
           options.assertInvariants?.(nextModel);

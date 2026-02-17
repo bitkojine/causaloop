@@ -8,12 +8,16 @@ export interface StressModel extends Model {
     val: number;
   }[];
   readonly lastRenderTime: number;
+  readonly scrollTop: number;
 }
+const ROW_HEIGHT = 30;
+const VIEWPORT_HEIGHT = 300;
 export const initialModel: StressModel = {
   status: "idle",
   itemCount: 10000,
   items: [],
   lastRenderTime: 0,
+  scrollTop: 0,
 };
 export type StressMsg =
   | {
@@ -28,6 +32,10 @@ export type StressMsg =
   | {
       kind: "update_count";
       count: number;
+    }
+  | {
+      kind: "scroll";
+      scrollTop: number;
     };
 export function update(
   model: StressModel,
@@ -36,6 +44,8 @@ export function update(
   switch (msg.kind) {
     case "update_count":
       return { model: { ...model, itemCount: msg.count }, effects: [] };
+    case "scroll":
+      return { model: { ...model, scrollTop: msg.scrollTop }, effects: [] };
     case "start": {
       const items = Array.from({ length: model.itemCount }, (_, i) => ({
         id: i,
@@ -88,7 +98,13 @@ export function view(
       h(
         "input",
         {
-          props: { type: "number", value: model.itemCount },
+          props: {
+            type: "number",
+            value: model.itemCount,
+          },
+          attrs: {
+            "aria-label": "Number of items to render",
+          },
           on: {
             change: (e: Event) =>
               dispatch({
@@ -103,7 +119,12 @@ export function view(
         "button",
         {
           on: { click: () => dispatch({ kind: "start" }) },
-          props: { disabled: model.status === "running" },
+          props: {
+            disabled: model.status === "running",
+          },
+          attrs: {
+            "aria-label": "Start VDOM stress test",
+          },
         },
         ["Start Stress"],
       ),
@@ -111,7 +132,12 @@ export function view(
         "button",
         {
           on: { click: () => dispatch({ kind: "stop" }) },
-          props: { disabled: model.status === "idle" },
+          props: {
+            disabled: model.status === "idle",
+          },
+          attrs: {
+            "aria-label": "Stop VDOM stress test",
+          },
         },
         ["Stop Stress"],
       ),
@@ -120,19 +146,64 @@ export function view(
       "div",
       {
         style: {
-          height: "300px",
+          height: `${VIEWPORT_HEIGHT}px`,
           overflow: "auto",
           border: "1px solid #333",
           marginTop: "10px",
+          position: "relative",
+        },
+        on: {
+          scroll: (e: Event) =>
+            dispatch({
+              kind: "scroll",
+              scrollTop: (e.target as HTMLElement).scrollTop,
+            }),
         },
       },
       [
         h(
           "ul",
-          {},
-          model.items.map((item) =>
-            h("li", { key: item.id }, [`Item ${item.id} - ${item.val}`]),
-          ),
+          {
+            style: {
+              height: `${model.items.length * ROW_HEIGHT}px`,
+              position: "relative",
+              margin: "0",
+              padding: "0",
+              listStyle: "none",
+            },
+          },
+          (() => {
+            const startIndex = Math.floor(model.scrollTop / ROW_HEIGHT);
+            const visibleCount = Math.ceil(VIEWPORT_HEIGHT / ROW_HEIGHT) + 2;
+            const endIndex = Math.min(
+              model.items.length,
+              startIndex + visibleCount,
+            );
+            const visibleItems = model.items.slice(startIndex, endIndex);
+
+            return visibleItems.map((item, index) =>
+              h(
+                "li",
+                {
+                  key: item.id,
+                  style: {
+                    position: "absolute",
+                    top: "0",
+                    left: "0",
+                    width: "100%",
+                    height: `${ROW_HEIGHT}px`,
+                    transform: `translateY(${(startIndex + index) * ROW_HEIGHT}px)`,
+                    padding: "0 10px",
+                    boxSizing: "border-box",
+                    display: "flex",
+                    alignItems: "center",
+                    borderBottom: "1px solid #222",
+                  },
+                },
+                [`Item ${item.id} - ${item.val}`],
+              ),
+            );
+          })(),
         ),
       ],
     ),
