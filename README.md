@@ -20,28 +20,40 @@ By strictly enforcing **The Elm Architecture (TEA)** in TypeScript, Causaloop en
 
 ### The Three Laws of Causaloop
 
-1.  📦 **Effects as Data**: Side effects (Fetch, Timer, Workers) are pure data structures until they hit the platform boundary.
-2.  📼 **Deterministic Replay**: Any UI state can be reconstructed exactly from a serializable message log.
+1.  📦 **Effects & Subscriptions as Data**: One-shot side effects (Fetch, Workers) are pure data structures. Ongoing processes (Timers, Animation Frames) are declarative subscriptions managed by the runtime.
+2.  📼 **Deterministic Replay**: Any UI state can be reconstructed exactly from a serializable message log. Subscriptions automatically resume after restore.
 3.  🛡️ **Atomic Processing**: Messages are processed one at a time via a FIFO queue, eliminating race conditions by design.
 
 ---
 
 ## 🏗️ Architecture
 
-Causaloop is built on a unidirectional data flow that is both predictable and scalable.
+Causaloop is built on a unidirectional data flow with two managed side-effect channels: **Effects** for one-shot operations and **Subscriptions** for ongoing processes.
 
 ```mermaid
 graph TD
-    UI[View/UI] -- dispatch(Msg) --> D[Dispatcher]
+    UI[View/UI] -- dispatch Msg --> D[Dispatcher]
     D -- Msg --> Q[FIFO Queue]
     Q -- Msg --> U[Update Function]
     U -- next Model --> D
     U -- Effects --> D
     D -- Commit --> S[Snapshot]
     S --> UI
-    D -- Run --> R[Platform Runners]
+    D -- Run Effects --> R[Platform Runners]
     R -- result as Msg --> D
+    D -- Reconcile --> SUB[Subscriptions]
+    SUB -- subscribe/unsubscribe --> R
 ```
+
+### Effects vs Subscriptions
+
+|                | Effects                          | Subscriptions                   |
+| -------------- | -------------------------------- | ------------------------------- |
+| **Purpose**    | One-shot async operations        | Ongoing processes               |
+| **Lifecycle**  | Fire-and-forget                  | Runtime-managed start/stop      |
+| **Examples**   | Fetch, Worker compute            | Timer ticks, animation frames   |
+| **Restore**    | Not restarted (state normalized) | Automatically resumed           |
+| **Emitted by** | `update()` return value          | `subscriptions(model)` function |
 
 ---
 
@@ -49,11 +61,11 @@ graph TD
 
 Causaloop is split into three primary layers, ensuring strict separation of concerns.
 
-| Package                                                        | Description                                                    | Status   |
-| :------------------------------------------------------------- | :------------------------------------------------------------- | :------- |
-| [**@causaloop/core**](./packages/core)                         | Platform-agnostic engine. Dispatcher, Replay, and VDOM types.  | `Stable` |
-| [**@causaloop/platform-browser**](./packages/platform-browser) | Browser effect runners (Fetch, Workers) and Snabbdom renderer. | `Stable` |
-| [**@causaloop/app-web**](./packages/app-web)                   | Demo application showcasing search, workers, and devtools.     | `Ready`  |
+| Package                                                        | Description                                                                  | Status   |
+| :------------------------------------------------------------- | :--------------------------------------------------------------------------- | :------- |
+| [**@causaloop/core**](./packages/core)                         | Platform-agnostic engine. Dispatcher, Subscriptions, Replay, and VDOM types. | `Stable` |
+| [**@causaloop/platform-browser**](./packages/platform-browser) | Browser runners (Fetch, Workers, Timer, RAF) and Snabbdom renderer.          | `Stable` |
+| [**@causaloop/app-web**](./packages/app-web)                   | Demo application showcasing search, workers, subscriptions, and devtools.    | `Ready`  |
 
 ---
 
@@ -65,6 +77,7 @@ We don't just claim stability; we prove it. Causaloop is continuously benchmarke
 - **🕒 Timer Storms**: The Browser Runner manages **1,000+ concurrent timers** with zero starvation.
 - **🐒 Monkey Testing**: Chaotic E2E simulations verify resilience against rapid-fire user interactions and navigation spam.
 - **📼 Replay Torture**: Verified deterministic reconstruction of session state across **100,000+ log entries**.
+- **🔄 Session Restore**: Subscriptions automatically resume after replay, eliminating stuck "phantom pending" states.
 
 ---
 
@@ -78,13 +91,8 @@ We don't just claim stability; we prove it. Causaloop is continuously benchmarke
 ### Quick Setup
 
 ```bash
-# Install dependencies (pnpm is required)
 pnpm install
-
-# Build all packages (Required before running tests or dev)
 pnpm run build
-
-# Start the dev server
 pnpm run dev
 ```
 
@@ -102,14 +110,14 @@ pnpm lint          # ESLint boundary enforcement
 ## 🔭 Roadmap
 
 - [x] **Monorepo Foundation**: pnpm workspaces + TS Project References.
-- [x] **Browser Runner**: Robust Fetch, Timers, and RAF.
-- [x] **Worker Pool**: Scalable background task orchestration.
+- [x] **Browser Runner**: Robust Fetch, Timers, RAF, and Workers.
+- [x] **Subscriptions**: Declarative lifecycle for ongoing processes (Timer, Animation, Stress).
+- [x] **Session Restore**: Automatic subscription resumption + state normalization.
 - [x] **Stress Suite**: 1M+ throughput verification.
 - [ ] **Context Injection**: Updates to include explicit `Time` and `Random` providers.
 - [ ] **SSR Support**: Node.js effect runners for server-side rendering.
 - [ ] **Worker Validation**: Add `zod` schema validation for worker messages.
 - [ ] **CLI Tool**: `create-causaloop-app` scaffolder for easy setup.
-- [ ] **DevTools**: Visual indicators (timeline/graph) for stalled effects.
 
 ---
 

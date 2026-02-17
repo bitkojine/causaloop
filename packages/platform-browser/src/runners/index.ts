@@ -6,6 +6,9 @@ import {
   AnimationFrameEffect,
   WorkerEffect,
   WrappedEffect,
+  Subscription,
+  TimerSubscription,
+  AnimationFrameSubscription,
 } from "@causaloop/core";
 export interface BrowserRunnerOptions {
   fetch?: typeof fetch;
@@ -181,12 +184,37 @@ export class BrowserRunner {
     dispatch: (msg: Msg) => void,
   ): void {
     this.busyWorkers.add(worker);
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
     const cleanup = () => {
+      if (timeoutId) clearTimeout(timeoutId);
       worker.onmessage = null;
       worker.onerror = null;
       this.busyWorkers.delete(worker);
       this.processNextInQueue(effect.scriptUrl);
     };
+    if (effect.timeoutMs) {
+      timeoutId = setTimeout(() => {
+        worker.terminate();
+        this.busyWorkers.delete(worker);
+        const pool = this.workersByUrl.get(effect.scriptUrl);
+        if (pool) {
+          const idx = pool.indexOf(worker);
+          if (idx !== -1) {
+            pool[idx] = this.createWorker(effect.scriptUrl);
+          }
+        }
+        worker.onmessage = null;
+        worker.onerror = null;
+        dispatch(
+          effect.onError(
+            new Error(
+              `Worker timed out after ${effect.timeoutMs}ms. The computation took too long. Try a smaller input.`,
+            ),
+          ),
+        );
+        this.processNextInQueue(effect.scriptUrl);
+      }, effect.timeoutMs);
+    }
     worker.onmessage = (e: MessageEvent) => {
       dispatch(effect.onSuccess(e.data));
       cleanup();
@@ -207,6 +235,48 @@ export class BrowserRunner {
         const next = queue.shift()!;
         this.executeOnWorker(idleWorker, next.effect, next.dispatch);
       }
+    }
+  }
+  private activeSubscriptions = new Map<string, { cancel: () => void }>();
+  public startSubscription(
+    sub: Subscription,
+    dispatch: (msg: Msg) => void,
+  ): void {
+    this.stopSubscription(sub.key);
+    switch (sub.kind) {
+      case "timer": {
+        const timerSub = sub as TimerSubscription;
+        const id = setInterval(() => {
+          dispatch(timerSub.onTick());
+        }, timerSub.intervalMs);
+        this.activeSubscriptions.set(sub.key, {
+          cancel: () => clearInterval(id),
+        });
+        break;
+      }
+      case "animationFrame": {
+        const animSub = sub as AnimationFrameSubscription;
+        let active = true;
+        const loop = (time: number) => {
+          if (!active) return;
+          dispatch(animSub.onFrame(time));
+          requestAnimationFrame(loop);
+        };
+        requestAnimationFrame(loop);
+        this.activeSubscriptions.set(sub.key, {
+          cancel: () => {
+            active = false;
+          },
+        });
+        break;
+      }
+    }
+  }
+  public stopSubscription(key: string): void {
+    const entry = this.activeSubscriptions.get(key);
+    if (entry) {
+      entry.cancel();
+      this.activeSubscriptions.delete(key);
     }
   }
 }

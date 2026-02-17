@@ -28,3 +28,38 @@
   2.  Create new workers up to `maxWorkersPerUrl` (default 4).
   3.  Queue requests if the pool is saturated.
 - **AbortController Cleanup**: The runner aggressively cleans up `AbortController` instances in the `.finally` block of fetch effects. This prevents memory leaks, especially in high-throughput scenarios where thousands of requests might process rapidly.
+
+## Replay Safety: "Phantom Pending" Bug Class
+
+TEA models store "in-flight" states (e.g. `status: "loading"`, `isRunning: true`) as regular serializable data. But these states represent a **relationship to a running effect** — and effects don't survive serialization. After restore/replay, the model says "I'm waiting for a response" but nothing is actually running. The UI is permanently stuck.
+
+This is structural, not a one-off oversight. Any new feature with an async state can introduce it silently.
+
+### Current workaround
+
+Manual model normalization in `main.ts` after `replay()` — resetting each feature's in-flight state to idle. This is error-prone: every new feature must remember to add its own normalization.
+
+### Proposed framework-level fix: Subscriptions
+
+Elm solves this with **Subscriptions** — a declarative layer where the runtime asks: "given this model, which effects should be running right now?"
+
+For self-scheduling features (timer, animation, stress), instead of:
+
+- `timer_started` → set `isRunning: true` + fire `setTimeout` effect
+- `timer_ticked` → fire next `setTimeout` effect (self-scheduling chain)
+
+The pattern becomes:
+
+- `subscriptions(model)` returns `[timerSub(1000)]` when `model.timer.isRunning === true`
+- The runtime manages the lifecycle: starts on subscribe, stops on unsubscribe, **restarts after restore**
+
+This eliminates the bug class entirely for ongoing processes. For one-shot effects (fetch, worker), a lighter `normalize()` convention or `TransientField` type marker could work.
+
+### Impact
+
+Adding subscriptions to `@causaloop/core` would:
+
+1. Eliminate phantom pending bugs by design (not by convention)
+2. Align with Elm's architecture more faithfully
+3. Make replay/restore safe by default — the framework's core value proposition
+4. Position Causaloop as solving a problem that even Elm sidesteps rather than solves

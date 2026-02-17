@@ -2,7 +2,8 @@ import {
   Model,
   UpdateResult,
   Snapshot,
-  TimerEffect,
+  TimerSubscription,
+  Subscription,
   VNode,
   h,
 } from "@causaloop/core";
@@ -33,25 +34,13 @@ export function update(
       if (model.isRunning) return { model, effects: [] };
       return {
         model: { ...model, isRunning: true },
-        effects: [
-          {
-            kind: "timer",
-            timeoutMs: 1000,
-            onTimeout: () => ({ kind: "timer_ticked" }),
-          } as TimerEffect<TimerMsg>,
-        ],
+        effects: [],
       };
     case "timer_ticked":
       if (!model.isRunning) return { model, effects: [] };
       return {
         model: { ...model, count: model.count + 1 },
-        effects: [
-          {
-            kind: "timer",
-            timeoutMs: 1000,
-            onTimeout: () => ({ kind: "timer_ticked" }),
-          } as TimerEffect<TimerMsg>,
-        ],
+        effects: [],
       };
     case "timer_stopped":
       return {
@@ -59,6 +48,19 @@ export function update(
         effects: [],
       };
   }
+}
+export function subscriptions(
+  model: Snapshot<TimerModel>,
+): readonly Subscription<TimerMsg>[] {
+  if (!model.isRunning) return [];
+  return [
+    {
+      kind: "timer",
+      key: "timer-tick",
+      intervalMs: 1000,
+      onTick: () => ({ kind: "timer_ticked" }),
+    } as TimerSubscription<TimerMsg>,
+  ];
 }
 export function view(
   snapshot: Snapshot<TimerModel>,

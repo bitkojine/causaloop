@@ -14,7 +14,14 @@ import {
   BrowserRunner,
   createSnabbdomRenderer,
 } from "@causaloop/platform-browser";
-import { initialModel, update, view, AppModel, AppMsg } from "./app.js";
+import {
+  initialModel,
+  update,
+  view,
+  appSubscriptions,
+  AppModel,
+  AppMsg,
+} from "./app.js";
 
 const throttle = (fn: (log: readonly MsgLogEntry[]) => void, wait: number) => {
   let inThrottle: boolean,
@@ -101,6 +108,30 @@ if (savedLogStr) {
       update,
       log,
     });
+
+    if (restoredModel.worker.status === "computing") {
+      restoredModel = {
+        ...restoredModel,
+        worker: {
+          ...restoredModel.worker,
+          status: "idle",
+          error: null,
+        },
+      };
+    }
+    if (restoredModel.load.status === "loading") {
+      restoredModel = {
+        ...restoredModel,
+        load: { ...restoredModel.load, status: "idle", data: null },
+      };
+    }
+    if (restoredModel.search.status === "loading") {
+      restoredModel = {
+        ...restoredModel,
+        search: { ...restoredModel.search, status: "idle" },
+      };
+    }
+
     initialLog = log;
     console.info("[STORAGE] Session restored successfully.");
   } catch (e) {
@@ -188,6 +219,12 @@ const dispatcher = createDispatcher<
     saveLogThrottled(log);
   },
   devMode: true,
+  subscriptions: appSubscriptions,
+  subscriptionRunner: {
+    start: (sub, dispatch) =>
+      runner.startSubscription(sub, dispatch as (msg: Msg) => void),
+    stop: (key) => runner.stopSubscription(key),
+  },
   assertInvariants: (model) => {
     if (typeof model.search.lastRequestId !== "number")
       throw new Error("Invariant failed");

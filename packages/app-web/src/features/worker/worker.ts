@@ -27,6 +27,9 @@ export type WorkerMsg =
       kind: "compute_failed";
       error: Error;
       taskId: number;
+    }
+  | {
+      kind: "compute_reset";
     };
 export const initialModel: WorkerModel = {
   result: null,
@@ -46,6 +49,7 @@ export function update(
         taskId: String(nextTaskId),
         scriptUrl: workerUrl,
         payload: msg.n,
+        timeoutMs: 30000,
         onSuccess: (res: unknown) => ({
           kind: "compute_succeeded",
           result: res as number,
@@ -79,12 +83,22 @@ export function update(
         model: { ...model, status: "error", error: msg.error.message },
         effects: [],
       };
+    case "compute_reset":
+      return {
+        model: { ...initialModel, lastTaskId: model.lastTaskId },
+        effects: [],
+      };
   }
 }
 export function view(
   snapshot: Snapshot<WorkerModel>,
   dispatch: (msg: WorkerMsg) => void,
 ): VNode {
+  const statusText =
+    snapshot.status === "computing"
+      ? "Worker status: computing… (30s timeout)"
+      : `Worker status: ${snapshot.status}`;
+
   return h("div", { class: { "feature-container": true } }, [
     h("h3", {}, ["Feature E: Worker Compute"]),
     h("input", {
@@ -96,32 +110,48 @@ export function view(
         "aria-label": "Number of primes to compute",
       },
     }),
-    h(
-      "button",
-      {
-        props: {
-          disabled: snapshot.status === "computing",
-        },
-        attrs: {
-          "aria-label": "Start prime number computation",
-        },
-        on: {
-          click: (e: Event) => {
-            const input = (
-              e.target as HTMLElement
-            ).parentElement?.querySelector("input");
-            if (input)
-              dispatch({
-                kind: "compute_requested",
-                n: parseInt((input as HTMLInputElement).value),
-              });
+    h("div", { class: { "btn-group": true } }, [
+      h(
+        "button",
+        {
+          props: {
+            disabled: snapshot.status === "computing",
+          },
+          attrs: {
+            "aria-label": "Start prime number computation",
+          },
+          on: {
+            click: (e: Event) => {
+              const input = (
+                e.target as HTMLElement
+              ).parentElement?.parentElement?.querySelector("input");
+              if (input)
+                dispatch({
+                  kind: "compute_requested",
+                  n: parseInt((input as HTMLInputElement).value),
+                });
+            },
           },
         },
-      },
-      ["Compute Primes"],
-    ),
+        ["Compute Primes"],
+      ),
+      snapshot.status === "computing" || snapshot.status === "error"
+        ? h(
+            "button",
+            {
+              attrs: {
+                "aria-label": "Reset worker to idle state",
+              },
+              on: {
+                click: () => dispatch({ kind: "compute_reset" }),
+              },
+            },
+            [snapshot.status === "computing" ? "Cancel" : "Reset"],
+          )
+        : h("span", {}, []),
+    ]),
     h("p", {}, [
-      `Worker status: ${snapshot.status}`,
+      statusText,
       snapshot.result !== null ? ` | Result: ${snapshot.result}` : "",
       snapshot.error ? ` | Error: ${snapshot.error}` : "",
     ]),

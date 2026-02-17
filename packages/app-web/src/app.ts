@@ -5,7 +5,9 @@ import {
   MsgLogEntry,
   VNode,
   h,
-  Effect,
+  Subscription,
+  TimerSubscription,
+  AnimationFrameSubscription,
 } from "@causaloop/core";
 import * as Search from "./features/search/search.js";
 import * as Load from "./features/load/load.js";
@@ -158,20 +160,53 @@ export function update(model: AppModel, msg: AppMsg): UpdateResult<AppModel> {
       );
       return {
         model: { ...model, stress: stressModel },
-        effects: effects.flatMap((e) => {
-          if (e.kind === "schedule_shuffle") {
-            return [
-              {
-                kind: "animationFrame",
-                onFrame: () => ({ kind: "stress", msg: { kind: "shuffle" } }),
-              } as Effect,
-            ];
-          }
-          return [];
-        }),
+        effects: effects.map((e) => ({
+          kind: "wrapper" as const,
+          original: e,
+          wrap: (m: Stress.StressMsg): AppMsg => ({ kind: "stress", msg: m }),
+        })),
       };
     }
   }
+}
+export function appSubscriptions(
+  model: Snapshot<AppModel>,
+): readonly Subscription<AppMsg>[] {
+  const timerSubs: Subscription<AppMsg>[] = Timer.subscriptions(
+    model.timer,
+  ).map((sub) => {
+    const timerSub = sub as TimerSubscription<Timer.TimerMsg>;
+    const wrapped: TimerSubscription<AppMsg> = {
+      kind: "timer",
+      key: `timer:${sub.key}`,
+      intervalMs: timerSub.intervalMs,
+      onTick: () => ({ kind: "timer", msg: timerSub.onTick() }),
+    };
+    return wrapped;
+  });
+  const animSubs: Subscription<AppMsg>[] = Animation.subscriptions(
+    model.animation,
+  ).map((sub) => {
+    const animSub = sub as AnimationFrameSubscription<Animation.AnimationMsg>;
+    const wrapped: AnimationFrameSubscription<AppMsg> = {
+      kind: "animationFrame",
+      key: `animation:${sub.key}`,
+      onFrame: (t: number) => ({ kind: "animation", msg: animSub.onFrame(t) }),
+    };
+    return wrapped;
+  });
+  const stressSubs: Subscription<AppMsg>[] = Stress.subscriptions(
+    model.stress,
+  ).map((sub) => {
+    const stressSub = sub as AnimationFrameSubscription<Stress.StressMsg>;
+    const wrapped: AnimationFrameSubscription<AppMsg> = {
+      kind: "animationFrame",
+      key: `stress:${sub.key}`,
+      onFrame: (t: number) => ({ kind: "stress", msg: stressSub.onFrame(t) }),
+    };
+    return wrapped;
+  });
+  return [...timerSubs, ...animSubs, ...stressSubs];
 }
 export function view(
   snapshot: Snapshot<AppModel>,

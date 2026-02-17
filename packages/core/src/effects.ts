@@ -35,6 +35,7 @@ export interface WorkerEffect<TMsg extends Msg = Msg> extends Effect {
   readonly taskId: string;
   readonly scriptUrl: string;
   readonly payload: unknown;
+  readonly timeoutMs?: number;
   readonly onSuccess: (data: unknown) => TMsg;
   readonly onError: (error: Error) => TMsg;
 }
