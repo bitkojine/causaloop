@@ -112,6 +112,30 @@ pnpm lint          # ESLint boundary enforcement
 - [ ] **DevTools**: Visual indicators (timeline/graph) for stalled effects.
 
 ---
+## 🤐 Zero Comment Policy
+
+**This repository enforces a radical "No Comments" rule for all source code.**
+
+The codebase is intended to be purely functional and readable without inline narratives.
+
+### 🛡️ Enforcement
+
+This rule is strictly enforced by both local and remote guardrails:
+
+1.  **Local Pre-Push Hook**: A git hook runs `scripts/check-thinking-comments.sh` before you can push.
+2.  **CI Pipeline**: The GitHub Actions workflow fails if any comments (`//` or `/*`) are detected in `packages/*/src`.
+
+### 🤖 Directive for AI Agents
+
+If you are an AI coding assistant working on this repo, follow these instructions precisely:
+
+-   **❌ Low-Value Thoughts**: "I think...", "Maybe...", "TODO:..." -> **Do NOT write these.**
+-   **✅ High-Value Insights**: Architectural decisions, complex invariants, or critical "gotchas". -> **Document these in [`docs/notes/ideas.md`](./docs/notes/ideas.md).**
+
+**Do not pollute the source code with your internal monologue.**
+
+---
+
 
 ## 🤝 Contributing
 
