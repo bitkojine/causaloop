@@ -9,6 +9,13 @@ We prioritize **determinism** and **speed**.
 - **Unit Tests (`vitest`)**: Use deeply isolated mocks for platform globals (`fetch`, `Worker`).
 - **E2E Tests (`playwright`)**: Use network interception (`page.route`) to mock backend responses, ensuring the frontend is tested in isolation from backend flakiness.
 
+## Classifications
+
+| Classification | Meaning                                                                                                                                                                                                                                                                       |
+| :------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Clean**      | **Dependency Injection**. We uses these mocks to **avoid I/O** (network, threads) in unit tests. While "clean" (passed explicitly), they are technically optional—we _could_ use real I/O, but we mock them to ensure tests are **fast, deterministic, and offline-capable**. |
+| **Necessary**  | **Architectural Boundary**. These mocks are **mandatory** for the test harness to work. They represent the "edges" of the system (e.g. observing a `dispatch` call) or simulating an environment that doesn't exist in the test runner.                                       |
+
 ## Inventory
 
 ### Unit Tests (Vitest)
