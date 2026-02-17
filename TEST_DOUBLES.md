@@ -13,7 +13,7 @@ We prioritize **determinism** and **speed**.
 
 | Classification | Meaning                                                                                                                                                                                                                                 |
 | :------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Clean**      | **Dependency Injection**. The dependency is passed explicitly to the runner/consumer. This allows us to inject usage-specific mocks (preventing global pollution) and run tests in complete isolation without side-effects.             |
+| **DI**         | **Dependency Injection**. The dependency is passed explicitly to the runner/consumer. This allows us to inject usage-specific mocks (preventing global pollution) and run tests in complete isolation without side-effects.             |
 | **Necessary**  | **Architectural Boundary**. These mocks are **mandatory** for the test harness to work. They represent the "edges" of the system (e.g. observing a `dispatch` call) or simulating an environment that doesn't exist in the test runner. |
 
 ## Inventory
@@ -22,9 +22,9 @@ We prioritize **determinism** and **speed**.
 
 | Target                | Type       | Classification | Notes                                                                                                                         | Location                                               |
 | :-------------------- | :--------- | :------------- | :---------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------- |
-| **`fetch`**           | `vi.fn()`  | **Clean**      | Injected via `BrowserRunnerOptions`. Completely isolated from global scope.                                                   | `packages/platform-browser/src/stress/effects.test.ts` |
-| **`Worker`**          | `vi.fn()`  | **Clean**      | Injected via `BrowserRunnerOptions` (factory function). Isolated from global scope.                                           | `packages/platform-browser/src/stress/effects.test.ts` |
-| **`AbortController`** | `vi.spyOn` | **Clean**      | Injected via `BrowserRunnerOptions` (factory function). We spy on the created instances, avoiding global prototype pollution. | `packages/platform-browser/src/stress/effects.test.ts` |
+| **`fetch`**           | `vi.fn()`  | **DI**         | Injected via `BrowserRunnerOptions`. Completely isolated from global scope.                                                   | `packages/platform-browser/src/stress/effects.test.ts` |
+| **`Worker`**          | `vi.fn()`  | **DI**         | Injected via `BrowserRunnerOptions` (factory function). Isolated from global scope.                                           | `packages/platform-browser/src/stress/effects.test.ts` |
+| **`AbortController`** | `vi.spyOn` | **DI**         | Injected via `BrowserRunnerOptions` (factory function). We spy on the created instances, avoiding global prototype pollution. | `packages/platform-browser/src/stress/effects.test.ts` |
 | **`Dispatch`**        | `vi.fn()`  | **Necessary**  | Accurately reflects the architectural boundary (Output Port). Capturing messages is the "correct" way to test TEA effects.    | Various `*.test.ts` files                              |
 
 ### E2E Tests (Playwright)
