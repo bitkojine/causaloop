@@ -72,7 +72,7 @@ export class BrowserRunner {
       // effect even supports an onError variant without more complex types.
       // But for 'worker' or 'fetch' which have onError, we might be able to cast?
       // For now, let's assume we can't dispatch safely to the app from a top-level crash
-      // unless we mandate a specific ErrorMsg shape. 
+      // unless we mandate a specific ErrorMsg shape.
       // However, the test "Effect Runner: should not crash..." expects us to not crash.
       // We will suppress the throw.
     }
