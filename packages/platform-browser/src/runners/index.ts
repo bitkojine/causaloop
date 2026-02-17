@@ -8,8 +8,29 @@ import {
   WrappedEffect,
 } from "@causaloop/core";
 
+export interface BrowserRunnerOptions {
+  fetch?: typeof fetch;
+  createWorker?: (url: string | URL, options?: WorkerOptions) => Worker;
+  createAbortController?: () => AbortController;
+}
+
 export class BrowserRunner {
   private controllers = new Map<string, AbortController>();
+  private readonly fetch: typeof fetch;
+  private readonly createWorker: (
+    url: string | URL,
+    options?: WorkerOptions,
+  ) => Worker;
+  private readonly createAbortController: () => AbortController;
+
+  constructor(options: BrowserRunnerOptions = {}) {
+    this.fetch = options.fetch ?? globalThis.fetch.bind(globalThis);
+    this.createWorker =
+      options.createWorker ??
+      ((url, opts) => new Worker(url, { type: "module", ...opts }));
+    this.createAbortController =
+      options.createAbortController ?? (() => new AbortController());
+  }
 
   public run(effect: CoreEffect, dispatch: (msg: Msg) => void): void {
     switch (effect.kind) {
@@ -55,7 +76,7 @@ export class BrowserRunner {
       expect = "json",
       timeoutMs,
     } = effect;
-    const controller = new AbortController();
+    const controller = this.createAbortController();
     // If an abortKey is provided, store the controller.
     // The previous controller for this key (if any) is implicitly replaced.
     // Cancellation of previous requests with the same key should be handled by a 'cancel' effect.
@@ -78,7 +99,7 @@ export class BrowserRunner {
     if (headers) fetchOptions.headers = headers;
     if (body) fetchOptions.body = body;
 
-    fetch(url, fetchOptions)
+    this.fetch(url, fetchOptions)
       .then(async (response) => {
         if (timeoutId) clearTimeout(timeoutId);
         if (!response.ok)
@@ -130,7 +151,7 @@ export class BrowserRunner {
   }
 
   private runWorker(effect: WorkerEffect, dispatch: (msg: Msg) => void): void {
-    const worker = new Worker(effect.scriptUrl, { type: "module" });
+    const worker = this.createWorker(effect.scriptUrl);
     worker.onmessage = (e: MessageEvent) => {
       dispatch(effect.onSuccess(e.data));
       worker.terminate();

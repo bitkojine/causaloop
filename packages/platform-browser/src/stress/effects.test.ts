@@ -1,41 +1,79 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach, Mock } from "vitest";
 import { BrowserRunner } from "../runners/index.js";
 import { FetchEffect, WorkerEffect, CancelEffect } from "@causaloop/core";
 
 // Mock globals
 const mockDispatch = vi.fn();
-global.fetch = vi.fn();
-// @ts-expect-error - Mocking global Worker
-global.Worker = vi.fn(function (this: Worker) {
-  this.onmessage = null;
-  this.onerror = null;
-  this.postMessage = vi.fn((data: unknown) => {
-    // Simulate async processing
-    setTimeout(() => {
-      if (data === "CRASH") {
-        if (this.onerror) {
-          this.onerror(
-            new ErrorEvent("error", {
-              message: "CRASHED",
-              filename: "worker.js",
-              lineno: 1,
-            }),
-          );
-        }
-      } else if (data === "echo") {
-        if (this.onmessage)
-          this.onmessage(new MessageEvent("message", { data: "echo" }));
-      }
-    }, 10);
-  });
-  this.terminate = vi.fn();
-});
 
 describe("Stress: Effects as Data Integrity", () => {
   let runner: BrowserRunner;
+  let mockFetch: Mock;
+  let mockCreateWorker: Mock;
+  let createdControllers: AbortController[];
 
   beforeEach(() => {
-    runner = new BrowserRunner();
+    mockFetch = vi.fn();
+    createdControllers = [];
+
+    // Mock Worker Factory
+    mockCreateWorker = vi.fn((_url: string | URL) => {
+      const listeners: {
+        onmessage: ((e: MessageEvent) => void) | null;
+        onerror: ((e: ErrorEvent) => void) | null;
+      } = {
+        onmessage: null,
+        onerror: null,
+      };
+
+      return {
+        set onmessage(fn: ((e: MessageEvent) => void) | null) {
+          listeners.onmessage = fn;
+        },
+        get onmessage() {
+          return listeners.onmessage;
+        },
+        set onerror(fn: ((e: ErrorEvent) => void) | null) {
+          listeners.onerror = fn;
+        },
+        get onerror() {
+          return listeners.onerror;
+        },
+        postMessage: vi.fn((data: unknown) => {
+          // Simulate async processing
+          setTimeout(() => {
+            if (data === "CRASH") {
+              if (listeners.onerror) {
+                listeners.onerror(
+                  new ErrorEvent("error", {
+                    message: "CRASHED",
+                    filename: "worker.js",
+                    lineno: 1,
+                  }),
+                );
+              }
+            } else if (data === "echo") {
+              if (listeners.onmessage)
+                listeners.onmessage(
+                  new MessageEvent("message", { data: "echo" }),
+                );
+            }
+          }, 10);
+        }),
+        terminate: vi.fn(),
+      } as unknown as Worker;
+    });
+
+    runner = new BrowserRunner({
+      fetch: mockFetch,
+      createWorker: mockCreateWorker,
+      createAbortController: () => {
+        const controller = new AbortController();
+        vi.spyOn(controller, "abort");
+        createdControllers.push(controller);
+        return controller;
+      },
+    });
+
     mockDispatch.mockClear();
     vi.useFakeTimers();
   });
@@ -45,8 +83,7 @@ describe("Stress: Effects as Data Integrity", () => {
   });
 
   it("Fetch: handles 500 errors gracefully", async () => {
-    // @ts-expect-error - Mocking global fetch
-    global.fetch.mockResolvedValue({
+    mockFetch.mockResolvedValue({
       ok: false,
       status: 500,
     });
@@ -75,9 +112,7 @@ describe("Stress: Effects as Data Integrity", () => {
     // If we fire 2 fetches with same abortKey, and then cancel, does it work?
     // And do we leak controllers?
 
-    const abortSpy = vi.spyOn(AbortController.prototype, "abort");
-    // @ts-expect-error - Mocking global fetch
-    global.fetch.mockImplementation(() => new Promise(() => {})); // Never resolves
+    mockFetch.mockImplementation(() => new Promise(() => {})); // Never resolves
 
     // 1. Fetch A
     runner.run(
@@ -119,7 +154,15 @@ describe("Stress: Effects as Data Integrity", () => {
     // Expect abort to be called TWICE.
     // Once for the auto-cancellation of Fetch A.
     // Once for the explicit cancellation of Fetch B.
-    expect(abortSpy).toHaveBeenCalledTimes(2);
+
+    // We should have created 2 controllers
+    expect(createdControllers).toHaveLength(2);
+
+    // Controller 1 (Fetch A) should be aborted (auto-cancel)
+    expect(createdControllers[0].abort).toHaveBeenCalled();
+
+    // Controller 2 (Fetch B) should be aborted (explicit cancel)
+    expect(createdControllers[1].abort).toHaveBeenCalled();
 
     // The first controller is checking for "orphan" status.
     // In a real app, if Fetch A is still pending, it will eventually complete or timeout.

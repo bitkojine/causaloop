@@ -13,12 +13,12 @@ We prioritize **determinism** and **speed**.
 
 ### Unit Tests (Vitest)
 
-| Target                | Type       | Classification | Notes                                                                                                                                             | Location                                               |
-| :-------------------- | :--------- | :------------- | :------------------------------------------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------- |
-| **`global.fetch`**    | `vi.fn()`  | **Lazy**       | We mock the global because `BrowserRunner` does not accept an injected `fetch` implementation. Ideally, we should pass `fetch` as a dependency.   | `packages/platform-browser/src/stress/effects.test.ts` |
-| **`global.Worker`**   | `vi.fn()`  | **Lazy**       | Flattening the `Worker` class into a simple mock is convenient, but hides complexity. We mock the global because of missing Dependency Injection. | `packages/platform-browser/src/stress/effects.test.ts` |
-| **`AbortController`** | `vi.spyOn` | **Lazy**       | We spy on the prototype because we can't inspect the internal `controller` instance created inside `runFetch`.                                    | `packages/platform-browser/src/stress/effects.test.ts` |
-| **`Dispatch`**        | `vi.fn()`  | **Necessary**  | Accurately reflects the architectural boundary (Output Port). Capturing messages is the "correct" way to test TEA effects.                        | Various `*.test.ts` files                              |
+| Target                | Type       | Classification | Notes                                                                                                                         | Location                                               |
+| :-------------------- | :--------- | :------------- | :---------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------- |
+| **`fetch`**           | `vi.fn()`  | **Clean**      | Injected via `BrowserRunnerOptions`. Completely isolated from global scope.                                                   | `packages/platform-browser/src/stress/effects.test.ts` |
+| **`Worker`**          | `vi.fn()`  | **Clean**      | Injected via `BrowserRunnerOptions` (factory function). Isolated from global scope.                                           | `packages/platform-browser/src/stress/effects.test.ts` |
+| **`AbortController`** | `vi.spyOn` | **Clean**      | Injected via `BrowserRunnerOptions` (factory function). We spy on the created instances, avoiding global prototype pollution. | `packages/platform-browser/src/stress/effects.test.ts` |
+| **`Dispatch`**        | `vi.fn()`  | **Necessary**  | Accurately reflects the architectural boundary (Output Port). Capturing messages is the "correct" way to test TEA effects.    | Various `*.test.ts` files                              |
 
 ### E2E Tests (Playwright)
 
