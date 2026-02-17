@@ -139,12 +139,20 @@ export function view(
   dispatch: (msg: AppMsg) => void,
   onReplay: (log: MsgLogEntry[], model: Snapshot<AppModel>) => void,
 ): VNode {
-  const errorLogs = msgLog.filter(
-    (entry) =>
-      entry.msg.kind.endsWith("_failed") ||
-      (entry.msg as any).kind === "compute_failed" ||
-      (entry.msg as any).error,
-  );
+  const errorLogs = msgLog.filter((entry) => {
+    const m = entry.msg;
+    // Check if it's a wrapped message (AppMsg) with an error
+    if ("msg" in m && typeof m.msg === "object" && m.msg !== null) {
+      const inner = m.msg as { kind?: string; error?: unknown };
+      return (
+        inner.kind?.endsWith("_failed") ||
+        inner.kind === "compute_failed" ||
+        !!inner.error
+      );
+    }
+    // Fallback for top-level errors
+    return m.kind.endsWith("_failed") || ("error" in m && !!m.error);
+  });
 
   return h("div", {}, [
     Search.view(snapshot.search, (m) => dispatch({ kind: "search", msg: m })),
@@ -164,15 +172,35 @@ export function view(
       errorLogs.length === 0
         ? h("p", { class: { "log-empty": true } }, ["No errors logged."])
         : h(
-          "ul",
-          {},
-          errorLogs.slice(-5).map((entry) =>
-            h("li", { class: { "log-error": true } }, [
-              `${new Date().toLocaleTimeString()} - ${entry.msg.kind}: ${(entry.msg as any).error?.message || "Unknown error"
-              }`,
-            ]),
+            "ul",
+            {},
+            errorLogs.slice(-5).map((entry) => {
+              const m = entry.msg;
+              let kind = m.kind;
+              let error: unknown = "Unknown error";
+
+              // Unwrap logic for display
+              if ("msg" in m && typeof m.msg === "object" && m.msg !== null) {
+                const inner = m.msg as { kind: string; error?: unknown };
+                kind = `${m.kind}/${inner.kind}`;
+                if (inner.error) error = inner.error;
+              } else if ("error" in m) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                error = (m as any).error;
+              }
+
+              const errorMessage =
+                error instanceof Error
+                  ? error.message
+                  : typeof error === "string"
+                    ? error
+                    : JSON.stringify(error);
+
+              return h("li", { class: { "log-error": true } }, [
+                `${new Date(entry.ts).toLocaleTimeString()} - ${kind}: ${errorMessage}`,
+              ]);
+            }),
           ),
-        ),
     ]),
   ]);
 }
