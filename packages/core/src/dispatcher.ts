@@ -77,7 +77,6 @@ export function createDispatcher<
   const maxLogSize = options.maxLogSize ?? 10000;
   let activeSubs: readonly Subscription<G>[] = [];
 
-  // Performance Tracking
   const updateHistory: number[] = [];
   const commitHistory: number[] = [];
   let lastCommitTime = time.now();
