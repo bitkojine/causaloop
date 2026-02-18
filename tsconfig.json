@@ -26,6 +26,9 @@
     },
     {
       "path": "./packages/app-web"
+    },
+    {
+      "path": "./packages/devtools"
     }
   ]
 }

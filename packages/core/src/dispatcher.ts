@@ -79,10 +79,10 @@ export function createDispatcher<
 
   // Performance Tracking
   let lastUpdateTs = 0;
-  let updateHistory: number[] = [];
-  let commitHistory: number[] = [];
+  const updateHistory: number[] = [];
+  const commitHistory: number[] = [];
   let lastCommitTime = time.now();
-  let fpsHistory: number[] = [];
+  const fpsHistory: number[] = [];
 
   const deepFreeze = (obj: unknown): unknown => {
     if (
