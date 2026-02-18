@@ -78,7 +78,6 @@ export function createDispatcher<
   let activeSubs: readonly Subscription<G>[] = [];
 
   // Performance Tracking
-  let lastUpdateTs = 0;
   const updateHistory: number[] = [];
   const commitHistory: number[] = [];
   let lastCommitTime = time.now();

@@ -11,7 +11,7 @@ export function createDevTools<M extends Model, G extends Msg>(
 ) {
   const { dispatcher, container } = options;
 
-  const view = (snapshot: M): VNode => {
+  const view = (_snapshot: M): VNode => {
     const metrics = dispatcher.getMetrics();
     const log = dispatcher.getMsgLog();
 
@@ -90,5 +90,5 @@ export function createDevTools<M extends Model, G extends Msg>(
   };
 
   const renderer = createSnabbdomRenderer(container, view);
-  dispatcher.subscribe((snapshot: M) => renderer.render(snapshot, () => {}));
+  dispatcher.subscribe((snapshot: M) => renderer.render(snapshot, () => { }));
 }
