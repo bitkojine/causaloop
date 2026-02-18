@@ -197,8 +197,8 @@ export function view<M extends Model>(
                     try {
                       const log = JSON.parse(content);
                       onReplay(log, currentModel);
-                    } catch (err) {
-                      console.error("Failed to parse log", err);
+                    } catch (_err) {
+                      void _err;
                     }
                   };
                   reader.readAsText(file);
@@ -229,8 +229,8 @@ export function view<M extends Model>(
                 try {
                   const log = JSON.parse(saved);
                   onReplay(log, currentModel);
-                } catch (e) {
-                  console.error("Failed to restore", e);
+                } catch (_e) {
+                  void _e;
                 }
               }
             },

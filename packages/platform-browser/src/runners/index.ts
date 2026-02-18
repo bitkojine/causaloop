@@ -68,8 +68,8 @@ export class BrowserRunner<TMsg extends Msg = Msg> {
           this.runWrapper(effect, dispatch);
           break;
       }
-    } catch (err) {
-      console.error("Critical error in effect runner:", err);
+    } catch (_err) {
+      void _err;
     }
   }
   private runWrapper(
