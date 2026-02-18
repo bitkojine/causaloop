@@ -68,7 +68,7 @@ export default tseslint.config(
       ],
       "@typescript-eslint/no-floating-promises": "error",
       "@typescript-eslint/switch-exhaustiveness-check": "error",
-      "no-console": ["warn", { allow: ["warn", "error", "info"] }],
+      "no-console": "error",
       "boundaries/element-types": [
         "error",
         {

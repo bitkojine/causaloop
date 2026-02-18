@@ -167,9 +167,6 @@ try {
     try {
       const log = JSON.parse(savedLogStr);
       if (!Array.isArray(log)) throw new Error("Log is not an array");
-      console.info(
-        `[STORAGE] Found saved session with ${log.length} messages.`,
-      );
 
       restoredModel = replay({
         initialModel,
@@ -201,9 +198,7 @@ try {
       }
 
       initialLog = log;
-      console.info("[STORAGE] Session restored successfully.");
     } catch (e) {
-      console.error("[STORAGE] Failed to restore session:", e);
       restoreError = e instanceof Error ? e.message : String(e);
       localStorage.removeItem("causaloop_log_v1");
     }
@@ -240,7 +235,6 @@ try {
       }
     }
 
-    console.info("[REPLAY] Result:", isMatched ? "MATCH" : "MISMATCH");
     dispatcher.dispatch({
       kind: "devtools",
       msg: {
@@ -320,7 +314,6 @@ try {
     dispatcher.dispatch(msg as AppMsg),
   );
 } catch (e) {
-  console.error("[FATAL] Application failed to initialize:", e);
   showRecoveryScreen(
     e instanceof Error
       ? `Initialization error: ${e.message}. This is likely caused by corrupted saved state.`
