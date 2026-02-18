@@ -10,6 +10,17 @@ import {
   UpdateContext,
 } from "./types.js";
 import { Subscription, diffSubscriptions } from "./subscriptions.js";
+
+export const __CAUSALOOP_DEV_IDENTITY__ = `
+   ▄██████████████████▄
+  ██▀▀     ▐██      ▀▀██
+ ▐█▌       ▐██       ▐█▌
+ ▐█▌   ▄██████████▄  ▐█▌ CAUSALOOP
+ ▐█▌  ██▀▀ ▐██ ▀▀██  ▐█▌ CORE-ENGINE
+  ██▄▄     ▐██     ▄▄██  [LIVE-SRC]
+   ▀██████████████████▀
+`;
+
 export interface DispatcherOptions<
   M extends Model,
   G extends Msg,
