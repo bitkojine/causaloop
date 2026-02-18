@@ -8,6 +8,7 @@ import {
   Subscription,
   TimerSubscription,
   AnimationFrameSubscription,
+  UpdateContext,
 } from "@causaloop/core";
 import * as Search from "./features/search/search.js";
 import * as Load from "./features/load/load.js";
@@ -27,33 +28,33 @@ export interface AppModel extends Model {
 }
 export type AppMsg =
   | {
-      kind: "search";
-      msg: Search.SearchMsg;
-    }
+    kind: "search";
+    msg: Search.SearchMsg;
+  }
   | {
-      kind: "load";
-      msg: Load.LoadMsg;
-    }
+    kind: "load";
+    msg: Load.LoadMsg;
+  }
   | {
-      kind: "timer";
-      msg: Timer.TimerMsg;
-    }
+    kind: "timer";
+    msg: Timer.TimerMsg;
+  }
   | {
-      kind: "animation";
-      msg: Animation.AnimationMsg;
-    }
+    kind: "animation";
+    msg: Animation.AnimationMsg;
+  }
   | {
-      kind: "worker";
-      msg: WorkerFeature.WorkerMsg;
-    }
+    kind: "worker";
+    msg: WorkerFeature.WorkerMsg;
+  }
   | {
-      kind: "devtools";
-      msg: Devtools.DevtoolsMsg;
-    }
+    kind: "devtools";
+    msg: Devtools.DevtoolsMsg;
+  }
   | {
-      kind: "stress";
-      msg: Stress.StressMsg;
-    };
+    kind: "stress";
+    msg: Stress.StressMsg;
+  };
 const initialModelTimer = Timer.initialModel;
 export const initialModel: AppModel = {
   search: Search.initialModel,
@@ -64,12 +65,17 @@ export const initialModel: AppModel = {
   devtools: Devtools.initialModel,
   stress: Stress.initialModel,
 };
-export function update(model: AppModel, msg: AppMsg): UpdateResult<AppModel> {
+export function update(
+  model: AppModel,
+  msg: AppMsg,
+  ctx: UpdateContext,
+): UpdateResult<AppModel> {
   switch (msg.kind) {
     case "search": {
       const { model: searchModel, effects } = Search.update(
         model.search,
         msg.msg,
+        ctx,
       );
       return {
         model: { ...model, search: searchModel },
@@ -81,7 +87,11 @@ export function update(model: AppModel, msg: AppMsg): UpdateResult<AppModel> {
       };
     }
     case "load": {
-      const { model: loadModel, effects } = Load.update(model.load, msg.msg);
+      const { model: loadModel, effects } = Load.update(
+        model.load,
+        msg.msg,
+        ctx,
+      );
       return {
         model: { ...model, load: loadModel },
         effects: effects.map((e) => ({
@@ -92,7 +102,11 @@ export function update(model: AppModel, msg: AppMsg): UpdateResult<AppModel> {
       };
     }
     case "timer": {
-      const { model: timerModel, effects } = Timer.update(model.timer, msg.msg);
+      const { model: timerModel, effects } = Timer.update(
+        model.timer,
+        msg.msg,
+        ctx,
+      );
       return {
         model: { ...model, timer: timerModel },
         effects: effects.map((e) => ({
@@ -106,6 +120,7 @@ export function update(model: AppModel, msg: AppMsg): UpdateResult<AppModel> {
       const { model: animModel, effects } = Animation.update(
         model.animation,
         msg.msg,
+        ctx,
       );
       return {
         model: { ...model, animation: animModel },
@@ -123,6 +138,7 @@ export function update(model: AppModel, msg: AppMsg): UpdateResult<AppModel> {
       const { model: workerModel, effects } = WorkerFeature.update(
         model.worker,
         msg.msg,
+        ctx,
       );
       return {
         model: { ...model, worker: workerModel },
@@ -140,6 +156,7 @@ export function update(model: AppModel, msg: AppMsg): UpdateResult<AppModel> {
       const { model: devtoolsModel, effects } = Devtools.update(
         model.devtools,
         msg.msg,
+        ctx,
       );
       return {
         model: { ...model, devtools: devtoolsModel },
@@ -157,6 +174,7 @@ export function update(model: AppModel, msg: AppMsg): UpdateResult<AppModel> {
       const { model: stressModel, effects } = Stress.update(
         model.stress,
         msg.msg,
+        ctx,
       );
       return {
         model: { ...model, stress: stressModel },
@@ -248,37 +266,37 @@ export function view(
       errorLogs.length === 0
         ? h("p", { class: { "log-empty": true } }, ["No errors logged."])
         : h(
-            "ul",
-            {},
-            errorLogs.slice(-5).map((entry) => {
-              const m = entry.msg;
-              let kind = m.kind;
-              let error: unknown = "Unknown error";
-              if ("msg" in m && typeof m.msg === "object" && m.msg !== null) {
-                const inner = m.msg as {
-                  kind: string;
-                  error?: unknown;
-                };
-                kind = `${m.kind}/${inner.kind}`;
-                if (inner.error) error = inner.error;
-              } else if ("error" in m) {
-                error = (
-                  m as {
-                    error: unknown;
-                  }
-                ).error;
-              }
-              const errorMessage =
-                error instanceof Error
-                  ? error.message
-                  : typeof error === "string"
-                    ? error
-                    : JSON.stringify(error);
-              return h("li", { class: { "log-error": true } }, [
-                `${new Date(entry.ts).toLocaleTimeString()} - ${kind}: ${errorMessage}`,
-              ]);
-            }),
-          ),
+          "ul",
+          {},
+          errorLogs.slice(-5).map((entry) => {
+            const m = entry.msg;
+            let kind = m.kind;
+            let error: unknown = "Unknown error";
+            if ("msg" in m && typeof m.msg === "object" && m.msg !== null) {
+              const inner = m.msg as {
+                kind: string;
+                error?: unknown;
+              };
+              kind = `${m.kind}/${inner.kind}`;
+              if (inner.error) error = inner.error;
+            } else if ("error" in m) {
+              error = (
+                m as {
+                  error: unknown;
+                }
+              ).error;
+            }
+            const errorMessage =
+              error instanceof Error
+                ? error.message
+                : typeof error === "string"
+                  ? error
+                  : JSON.stringify(error);
+            return h("li", { class: { "log-error": true } }, [
+              `${new Date(entry.ts).toLocaleTimeString()} - ${kind}: ${errorMessage}`,
+            ]);
+          }),
+        ),
     ]),
     h("div", { class: { "footer-reset": true } }, [
       "Ran into issues?",

@@ -6,6 +6,7 @@ import {
   CancelEffect,
   VNode,
   h,
+  UpdateContext,
 } from "@causaloop/core";
 export interface LoadModel extends Model {
   readonly status: "idle" | "loading" | "success" | "error" | "cancelled";
@@ -13,19 +14,19 @@ export interface LoadModel extends Model {
 }
 export type LoadMsg =
   | {
-      kind: "load_requested";
-    }
+    kind: "load_requested";
+  }
   | {
-      kind: "load_succeeded";
-      data: unknown;
-    }
+    kind: "load_succeeded";
+    data: unknown;
+  }
   | {
-      kind: "load_failed";
-      error: Error;
-    }
+    kind: "load_failed";
+    error: Error;
+  }
   | {
-      kind: "load_cancelled";
-    };
+    kind: "load_cancelled";
+  };
 export const initialModel: LoadModel = {
   status: "idle",
   data: null,
@@ -33,6 +34,7 @@ export const initialModel: LoadModel = {
 export function update(
   model: LoadModel,
   msg: LoadMsg,
+  _ctx: UpdateContext,
 ): UpdateResult<LoadModel> {
   switch (msg.kind) {
     case "load_requested": {

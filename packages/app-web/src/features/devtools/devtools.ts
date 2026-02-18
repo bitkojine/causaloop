@@ -5,6 +5,7 @@ import {
   MsgLogEntry,
   VNode,
   h,
+  UpdateContext,
 } from "@causaloop/core";
 
 export interface ReplayDiff {
@@ -25,23 +26,23 @@ export interface DevtoolsModel extends Model {
 }
 export type DevtoolsMsg =
   | {
-      kind: "devtools_toggled";
-    }
+    kind: "devtools_toggled";
+  }
   | {
-      kind: "replay_triggered";
-      log: MsgLogEntry[];
-      initialModel: Snapshot<Model>;
-    }
+    kind: "replay_triggered";
+    log: MsgLogEntry[];
+    initialModel: Snapshot<Model>;
+  }
   | {
-      kind: "replay_completed";
-      success: boolean;
-      diffs: readonly ReplayDiff[];
-      logLength: number;
-    }
+    kind: "replay_completed";
+    success: boolean;
+    diffs: readonly ReplayDiff[];
+    logLength: number;
+  }
   | {
-      kind: "log_imported";
-      log: MsgLogEntry[];
-    };
+    kind: "log_imported";
+    log: MsgLogEntry[];
+  };
 export const initialModel: DevtoolsModel = {
   isOpen: false,
   lastReplayResult: null,
@@ -49,6 +50,7 @@ export const initialModel: DevtoolsModel = {
 export function update(
   model: DevtoolsModel,
   msg: DevtoolsMsg,
+  _ctx: UpdateContext,
 ): UpdateResult<DevtoolsModel> {
   switch (msg.kind) {
     case "devtools_toggled":
@@ -98,34 +100,34 @@ function renderReplayResult(detail: ReplayDetail): VNode {
       h("summary", {}, ["What does this mean?"]),
       h("p", {}, [
         "A deterministic update function should produce the same state when given the same messages. " +
-          "A mismatch can occur when: (1) the update function uses non-deterministic values like Date.now() or Math.random() directly, " +
-          "(2) effects modified external state that influenced subsequent updates, " +
-          "or (3) the replay was run against a different starting model than the original session.",
+        "A mismatch can occur when: (1) the update function uses non-deterministic values like Date.now() or Math.random() directly, " +
+        "(2) effects modified external state that influenced subsequent updates, " +
+        "or (3) the replay was run against a different starting model than the original session.",
       ]),
     ]),
     detail.diffs.length > 0
       ? h("div", { class: { "replay-diffs": true } }, [
-          h("h4", {}, [`${detail.diffs.length} field(s) differ:`]),
-          h(
-            "table",
-            {},
-            [
+        h("h4", {}, [`${detail.diffs.length} field(s) differ:`]),
+        h(
+          "table",
+          {},
+          [
+            h("tr", {}, [
+              h("th", {}, ["Field"]),
+              h("th", {}, ["Replayed"]),
+              h("th", {}, ["Current"]),
+            ]),
+          ].concat(
+            detail.diffs.map((d) =>
               h("tr", {}, [
-                h("th", {}, ["Field"]),
-                h("th", {}, ["Replayed"]),
-                h("th", {}, ["Current"]),
+                h("td", {}, [d.key]),
+                h("td", { class: { expected: true } }, [d.expected]),
+                h("td", { class: { actual: true } }, [d.actual]),
               ]),
-            ].concat(
-              detail.diffs.map((d) =>
-                h("tr", {}, [
-                  h("td", {}, [d.key]),
-                  h("td", { class: { expected: true } }, [d.expected]),
-                  h("td", { class: { actual: true } }, [d.actual]),
-                ]),
-              ),
             ),
           ),
-        ])
+        ),
+      ])
       : text(""),
   ]);
 }

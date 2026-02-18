@@ -6,6 +6,7 @@ import {
   Subscription,
   VNode,
   h,
+  UpdateContext,
 } from "@causaloop/core";
 export interface TimerModel extends Model {
   readonly count: number;
@@ -13,14 +14,14 @@ export interface TimerModel extends Model {
 }
 export type TimerMsg =
   | {
-      kind: "timer_started";
-    }
+    kind: "timer_started";
+  }
   | {
-      kind: "timer_ticked";
-    }
+    kind: "timer_ticked";
+  }
   | {
-      kind: "timer_stopped";
-    };
+    kind: "timer_stopped";
+  };
 export const initialModel: TimerModel = {
   count: 0,
   isRunning: false,
@@ -28,6 +29,7 @@ export const initialModel: TimerModel = {
 export function update(
   model: TimerModel,
   msg: TimerMsg,
+  _ctx: UpdateContext,
 ): UpdateResult<TimerModel> {
   switch (msg.kind) {
     case "timer_started":

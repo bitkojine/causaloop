@@ -7,6 +7,8 @@ import {
   TimeProvider,
   RandomProvider,
   MsgLogEntry,
+  UpdateContext,
+  Entropy,
 } from "./types.js";
 import { Subscription, diffSubscriptions } from "./subscriptions.js";
 export interface DispatcherOptions<
@@ -99,11 +101,38 @@ export function createDispatcher<
     try {
       while (queue.length > 0) {
         const msg = queue.shift()!;
-        msgLog.push({ msg, ts: time.now() });
+        const ts = time.now();
+        const recordedRandoms: number[] = [];
+
+        const ctx: UpdateContext = {
+          random: () => {
+            const r = options.randomProvider
+              ? options.randomProvider.random()
+              : Math.random();
+            recordedRandoms.push(r);
+            return r;
+          },
+          now: () => ts,
+        };
+
+        const { model: nextModel, effects } = options.update(
+          currentModel,
+          msg,
+          ctx,
+        );
+
+        msgLog.push({
+          msg,
+          ts,
+          ...(recordedRandoms.length > 0
+            ? { entropy: { random: recordedRandoms } }
+            : {}),
+        });
+
         if (msgLog.length > maxLogSize) {
           msgLog.shift();
         }
-        const { model: nextModel, effects } = options.update(currentModel, msg);
+
         if (options.devMode) {
           options.assertInvariants?.(nextModel);
           deepFreeze(nextModel);

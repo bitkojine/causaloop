@@ -1,4 +1,4 @@
-import { Model, UpdateResult } from "@causaloop/core";
+import { Model, UpdateResult, UpdateContext } from "@causaloop/core";
 import {
   h,
   VNode,
@@ -26,25 +26,26 @@ export const initialModel: StressModel = {
 };
 export type StressMsg =
   | {
-      kind: "start";
-    }
+    kind: "start";
+  }
   | {
-      kind: "stop";
-    }
+    kind: "stop";
+  }
   | {
-      kind: "shuffle";
-    }
+    kind: "shuffle";
+  }
   | {
-      kind: "update_count";
-      count: number;
-    }
+    kind: "update_count";
+    count: number;
+  }
   | {
-      kind: "scroll";
-      scrollTop: number;
-    };
+    kind: "scroll";
+    scrollTop: number;
+  };
 export function update(
   model: StressModel,
   msg: StressMsg,
+  ctx: UpdateContext,
 ): UpdateResult<StressModel> {
   switch (msg.kind) {
     case "update_count":
@@ -70,7 +71,7 @@ export function update(
       if (model.status !== "running") return { model, effects: [] };
       const newItems = [...model.items];
       for (let i = newItems.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
+        const j = Math.floor(ctx.random() * (i + 1));
         const temp = newItems[i]!;
         newItems[i] = newItems[j]!;
         newItems[j] = temp;

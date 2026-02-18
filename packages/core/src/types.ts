@@ -10,9 +10,17 @@ export interface UpdateResult<M extends Model, E extends Effect = Effect> {
   readonly effects: readonly E[];
 }
 export type Snapshot<M extends Model> = Readonly<M>;
+export interface UpdateContext {
+  random(): number;
+  now(): number;
+}
+export interface Entropy {
+  readonly random: readonly number[];
+}
 export type UpdateFn<M extends Model, G extends Msg, E extends Effect> = (
   model: M,
   msg: G,
+  ctx: UpdateContext,
 ) => UpdateResult<M, E>;
 export interface TimeProvider {
   now(): number;
@@ -23,4 +31,5 @@ export interface RandomProvider {
 export interface MsgLogEntry {
   readonly msg: Msg;
   readonly ts: number;
+  readonly entropy?: Entropy;
 }
