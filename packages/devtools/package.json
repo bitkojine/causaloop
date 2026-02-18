@@ -1,16 +1,16 @@
 {
-    "name": "@causaloop/devtools",
-    "version": "1.0.0",
-    "private": true,
-    "type": "module",
-    "exports": {
-        ".": "./src/index.ts"
-    },
-    "scripts": {
-        "build": "tsc"
-    },
-    "dependencies": {
-        "@causaloop/core": "workspace:*",
-        "@causaloop/platform-browser": "workspace:*"
-    }
+  "name": "@causaloop/devtools",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@causaloop/core": "workspace:*",
+    "@causaloop/platform-browser": "workspace:*"
+  }
 }

@@ -92,20 +92,24 @@ This repository implements a strict zero-console policy for all source code.
 An audit of the `causal-factory` implementation reveals a divergence between the library's available features and its real-world application.
 
 ### Under-utilization of Framework Features
+
 - **UI Overlay via `innerHTML`**: The game manually updates overlays using string templates in the renderer. It should migrate to the library's **Snabbdom-based VNode system** (`createSnabbdomRenderer`).
 - **Raw `setInterval` for AutoPilot**: The game uses external timers for autopilot logic. This should be refactored into a **`TimerSubscription`**, allowing the engine to manage the lifecycle and enabling features like "pause" to work across the entire simulation.
 - **Global `latestSnapshot`**: The game caches the latest state in a mutable global for external access. Using the library's **`subscribe()`** method would allow for a more robust, event-driven architecture.
 
 ### Feature Gaps in the Library
+
 - **Declarative Canvas API**: While the library handles HTML/SVG via VDOM, it lacks a standard way to express **Canvas operations** declaratively. This forces games to build manual, imperative renderers.
 - **Empty DevTools**: The engine's core value is determinism, but the `devtools` package is currently empty. It should provide standard components for **log inspection, time-travel, and state diffing**.
 - **Performance Middleware**: Logic for `tickTime` and `fps` tracking is currently implemented in the game. These are generic metrics that the library could provide as part of the `Dispatcher`.
 
 ### Implementation Redundancy
+
 - **Manual Replay Validation**: The game implements its own determinism check (JSON string comparison). This should be a first-class feature of the library (e.g., `dispatcher.verifyDeterminism()`).
 - **Generic Metrics**: Calculating average tick times over a rolling frame buffer is logic that belongs in a library utility rather than UI code.
 
 ### Summary of Integration Recommendations
+
 1. Refactor **AutoPilot** into a Library Subscription.
 2. Migrated **UI Overlay** to the Library's `createSnabbdomRenderer`.
 3. Start implementing the **DevTools** package to replace the manual `alert()` replay check.
