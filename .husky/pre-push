@@ -1,1 +1,1 @@
-npx pnpm run format:check && npx pnpm run lint && ./scripts/check-forbidden.sh && npm run check:comments
+pnpm format:check && pnpm lint && pnpm check:forbidden && pnpm check:comments && pnpm build && pnpm test
