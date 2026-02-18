@@ -48,8 +48,8 @@ test.describe("Animation Feature", () => {
 
   test("should start and stop timer", async ({ page }) => {
     await page.goto("/");
-    const startBtn = page.getByRole("button", { name: "Start Timer" });
-    const stopBtn = page.getByRole("button", { name: "Stop Timer" });
+    const startBtn = page.getByRole("button", { name: "Start the timer" });
+    const stopBtn = page.getByRole("button", { name: "Stop the timer" });
     const countLabel = page.locator(
       '.feature-container:has-text("Feature C: Timer") > p',
     );
@@ -137,10 +137,12 @@ test.describe("Animation Feature", () => {
 
   test("should compute primes in worker", async ({ page }) => {
     await page.goto("/");
-    const input = page.locator(
-      '.feature-container:has-text("Feature E: Worker Compute") input[type="number"]',
-    );
-    const computeBtn = page.getByRole("button", { name: "Compute Primes" });
+    const input = page.getByRole("spinbutton", {
+      name: "Number of primes to compute",
+    });
+    const computeBtn = page.getByRole("button", {
+      name: "Start prime number computation",
+    });
 
     await input.fill("1000");
     await computeBtn.click();
@@ -176,10 +178,12 @@ test.describe("Animation Feature", () => {
 
   test("should handle invalid worker input", async ({ page }) => {
     await page.goto("/");
-    const input = page.locator(
-      '.feature-container:has-text("Feature E: Worker Compute") input[type="number"]',
-    );
-    const computeBtn = page.getByRole("button", { name: "Compute Primes" });
+    const input = page.getByRole("spinbutton", {
+      name: "Number of primes to compute",
+    });
+    const computeBtn = page.getByRole("button", {
+      name: "Start prime number computation",
+    });
 
     // Negative number
     await input.fill("-5");
@@ -190,8 +194,8 @@ test.describe("Animation Feature", () => {
 
   test("should enforce timer button states", async ({ page }) => {
     await page.goto("/");
-    const startBtn = page.getByRole("button", { name: "Start Timer" });
-    const stopBtn = page.getByRole("button", { name: "Stop Timer" });
+    const startBtn = page.getByRole("button", { name: "Start the timer" });
+    const stopBtn = page.getByRole("button", { name: "Stop the timer" });
 
     // Initially
     await expect(startBtn).toBeEnabled();
@@ -214,8 +218,8 @@ test.describe("Animation Feature", () => {
     // Open DevTools
     await page.getByRole("button", { name: "DevTools" }).click();
 
-    const startBtn = page.getByRole("button", { name: "Start Timer" });
-    const stopBtn = page.getByRole("button", { name: "Stop Timer" });
+    const startBtn = page.getByRole("button", { name: "Start the timer" });
+    const stopBtn = page.getByRole("button", { name: "Stop the timer" });
     const replayBtn = page.getByRole("button", { name: "Replay Log" });
 
     await startBtn.click();
@@ -227,9 +231,12 @@ test.describe("Animation Feature", () => {
       .innerText();
 
     await replayBtn.click();
-    await expect(page.locator(".replay-result")).toContainText("success", {
-      timeout: 10000,
-    });
+    await expect(page.locator(".replay-result")).toContainText(
+      "Replay Passed",
+      {
+        timeout: 10000,
+      },
+    );
 
     const finalCountText = await page
       .locator('.feature-container:has-text("Feature C: Timer") >> p')

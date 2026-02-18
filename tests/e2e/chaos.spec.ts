@@ -5,8 +5,8 @@ test.describe("Adversarial User Interactions", () => {
     await page.goto("/");
 
     // 1. Spam Start/Stop Timer
-    const startTimer = page.getByRole("button", { name: "Start Timer" });
-    const stopTimer = page.getByRole("button", { name: "Stop Timer" });
+    const startTimer = page.getByRole("button", { name: "Start the timer" });
+    const stopTimer = page.getByRole("button", { name: "Stop the timer" });
 
     for (let i = 0; i < 20; i++) {
       await startTimer.click();
@@ -45,9 +45,12 @@ test.describe("Adversarial User Interactions", () => {
     await page.getByRole("button", { name: "DevTools" }).click();
     await page.getByRole("button", { name: "Replay Log" }).click();
 
-    await expect(page.locator(".replay-result")).toContainText("success", {
-      timeout: 30000,
-    });
+    await expect(page.locator(".replay-result")).toContainText(
+      "Replay Passed",
+      {
+        timeout: 30000,
+      },
+    );
   });
 
   test("Browser behavior: offline simulation", async ({ page, context }) => {

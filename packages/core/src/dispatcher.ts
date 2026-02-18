@@ -33,6 +33,7 @@ export interface DispatcherOptions<
 export interface Dispatcher<M extends Model, G extends Msg> {
   dispatch(msg: G): void;
   getSnapshot(): Snapshot<M>;
+  getReplayableState(): { log: readonly MsgLogEntry[]; snapshot: Snapshot<M> };
   subscribe(callback: (snapshot: Snapshot<M>) => void): () => void;
   shutdown(): void;
   getMsgLog(): readonly MsgLogEntry[];
@@ -128,6 +129,10 @@ export function createDispatcher<
   return {
     dispatch,
     getSnapshot: () => currentModel as Snapshot<M>,
+    getReplayableState: () => ({
+      log: [...msgLog],
+      snapshot: currentModel as Snapshot<M>,
+    }),
     subscribe: (callback) => {
       subscribers.add(callback);
       return () => subscribers.delete(callback);
