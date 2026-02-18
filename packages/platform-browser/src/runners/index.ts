@@ -15,7 +15,7 @@ export interface BrowserRunnerOptions {
   createWorker?: (url: string | URL, options?: WorkerOptions) => Worker;
   createAbortController?: () => AbortController;
 }
-export class BrowserRunner {
+export class BrowserRunner<TMsg extends Msg = Msg> {
   private controllers = new Map<string, AbortController>();
   private readonly fetch: typeof fetch;
   private readonly createWorker: (
@@ -29,8 +29,8 @@ export class BrowserRunner {
   private workerQueue = new Map<
     string,
     {
-      effect: WorkerEffect;
-      dispatch: (msg: Msg) => void;
+      effect: WorkerEffect<TMsg>;
+      dispatch: (msg: TMsg) => void;
     }[]
   >();
   constructor(
@@ -46,7 +46,7 @@ export class BrowserRunner {
       options.createAbortController ?? (() => new AbortController());
     this.maxWorkersPerUrl = options.maxWorkersPerUrl ?? 4;
   }
-  public run(effect: CoreEffect, dispatch: (msg: Msg) => void): void {
+  public run(effect: CoreEffect<TMsg>, dispatch: (msg: TMsg) => void): void {
     try {
       switch (effect.kind) {
         case "fetch":
@@ -73,14 +73,17 @@ export class BrowserRunner {
     }
   }
   private runWrapper(
-    effect: WrappedEffect,
-    dispatch: (msg: Msg) => void,
+    effect: WrappedEffect<TMsg>,
+    dispatch: (msg: TMsg) => void,
   ): void {
-    this.run(effect.original, (msg: unknown) => {
-      dispatch(effect.wrap(msg));
+    this.run(effect.original as CoreEffect<TMsg>, (msg: TMsg) => {
+      dispatch(effect.wrap(msg) as TMsg);
     });
   }
-  private runFetch(effect: FetchEffect, dispatch: (msg: Msg) => void): void {
+  private runFetch(
+    effect: FetchEffect<TMsg>,
+    dispatch: (msg: TMsg) => void,
+  ): void {
     const {
       url,
       method = "GET",
@@ -135,7 +138,10 @@ export class BrowserRunner {
         }
       });
   }
-  private runTimer(effect: TimerEffect, dispatch: (msg: Msg) => void): void {
+  private runTimer(
+    effect: TimerEffect<TMsg>,
+    dispatch: (msg: TMsg) => void,
+  ): void {
     setTimeout(() => {
       dispatch(effect.onTimeout());
     }, effect.timeoutMs);
@@ -148,14 +154,17 @@ export class BrowserRunner {
     }
   }
   private runAnimationFrame(
-    effect: AnimationFrameEffect,
-    dispatch: (msg: Msg) => void,
+    effect: AnimationFrameEffect<TMsg>,
+    dispatch: (msg: TMsg) => void,
   ): void {
     requestAnimationFrame((time) => {
       dispatch(effect.onFrame(time));
     });
   }
-  private runWorker(effect: WorkerEffect, dispatch: (msg: Msg) => void): void {
+  private runWorker(
+    effect: WorkerEffect<TMsg>,
+    dispatch: (msg: TMsg) => void,
+  ): void {
     const { scriptUrl } = effect;
     let pool = this.workersByUrl.get(scriptUrl);
     if (!pool) {
@@ -180,8 +189,8 @@ export class BrowserRunner {
   }
   private executeOnWorker(
     worker: Worker,
-    effect: WorkerEffect,
-    dispatch: (msg: Msg) => void,
+    effect: WorkerEffect<TMsg>,
+    dispatch: (msg: TMsg) => void,
   ): void {
     this.busyWorkers.add(worker);
     let timeoutId: ReturnType<typeof setTimeout> | undefined;
@@ -239,13 +248,13 @@ export class BrowserRunner {
   }
   private activeSubscriptions = new Map<string, { cancel: () => void }>();
   public startSubscription(
-    sub: Subscription,
-    dispatch: (msg: Msg) => void,
+    sub: Subscription<TMsg>,
+    dispatch: (msg: TMsg) => void,
   ): void {
     this.stopSubscription(sub.key);
     switch (sub.kind) {
       case "timer": {
-        const timerSub = sub as TimerSubscription;
+        const timerSub = sub as TimerSubscription<TMsg>;
         const id = setInterval(() => {
           dispatch(timerSub.onTick());
         }, timerSub.intervalMs);
@@ -255,7 +264,7 @@ export class BrowserRunner {
         break;
       }
       case "animationFrame": {
-        const animSub = sub as AnimationFrameSubscription;
+        const animSub = sub as AnimationFrameSubscription<TMsg>;
         let active = true;
         const loop = (time: number) => {
           if (!active) return;
