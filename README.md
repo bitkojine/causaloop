@@ -9,7 +9,6 @@
   ██▄▄     ▐██     ▄▄██  [LIVE-SRC]
    ▀██████████████████▀
 ```
-
   <h1>Causaloop</h1>
   <p><strong>A production-grade TypeScript ecosystem for deterministic, effect-safe MVU applications.</strong></p>
 
