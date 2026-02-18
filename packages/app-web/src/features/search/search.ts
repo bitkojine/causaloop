@@ -5,6 +5,7 @@ import {
   Snapshot,
   VNode,
   h,
+  UpdateContext,
 } from "@causaloop/core";
 export interface SearchModel extends Model {
   readonly query: string;
@@ -36,6 +37,7 @@ export const initialModel: SearchModel = {
 export function update(
   model: SearchModel,
   msg: SearchMsg,
+  _ctx: UpdateContext,
 ): UpdateResult<SearchModel> {
   switch (msg.kind) {
     case "search_changed": {

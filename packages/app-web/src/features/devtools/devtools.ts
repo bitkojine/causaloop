@@ -5,6 +5,7 @@ import {
   MsgLogEntry,
   VNode,
   h,
+  UpdateContext,
 } from "@causaloop/core";
 
 export interface ReplayDiff {
@@ -49,6 +50,7 @@ export const initialModel: DevtoolsModel = {
 export function update(
   model: DevtoolsModel,
   msg: DevtoolsMsg,
+  _ctx: UpdateContext,
 ): UpdateResult<DevtoolsModel> {
   switch (msg.kind) {
     case "devtools_toggled":

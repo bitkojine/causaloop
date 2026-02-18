@@ -5,6 +5,7 @@ import {
   WorkerEffect,
   VNode,
   h,
+  UpdateContext,
 } from "@causaloop/core";
 import workerUrl from "./compute.worker?worker&url";
 export interface WorkerModel extends Model {
@@ -40,6 +41,7 @@ export const initialModel: WorkerModel = {
 export function update(
   model: WorkerModel,
   msg: WorkerMsg,
+  _ctx: UpdateContext,
 ): UpdateResult<WorkerModel> {
   switch (msg.kind) {
     case "compute_requested": {

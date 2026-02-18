@@ -21,7 +21,7 @@ By strictly enforcing **The Elm Architecture (TEA)** in TypeScript, Causaloop en
 ### The Three Laws of Causaloop
 
 1.  📦 **Effects & Subscriptions as Data**: One-shot side effects (Fetch, Workers) are pure data structures. Ongoing processes (Timers, Animation Frames) are declarative subscriptions managed by the runtime.
-2.  📼 **Deterministic Replay**: Any UI state can be reconstructed exactly from a serializable message log. Subscriptions automatically resume after restore.
+2.  📼 **Deterministic Replay**: Any UI state can be reconstructed exactly from a serializable message log. Non-deterministic operations (Time, Random) are provided via a managed context and recorded for perfect playback.
 3.  🛡️ **Atomic Processing**: Messages are processed one at a time via a FIFO queue, eliminating race conditions by design.
 
 ---
@@ -114,7 +114,7 @@ pnpm lint          # ESLint boundary enforcement
 - [x] **Subscriptions**: Declarative lifecycle for ongoing processes (Timer, Animation, Stress).
 - [x] **Session Restore**: Automatic subscription resumption + state normalization.
 - [x] **Stress Suite**: 1M+ throughput verification.
-- [ ] **Context Injection**: Updates to include explicit `Time` and `Random` providers.
+- [x] **Context Injection**: Updates receive explicit `UpdateContext` for deterministic `now()` and `random()`.
 - [ ] **SSR Support**: Node.js effect runners for server-side rendering.
 - [ ] **Worker Validation**: Add `zod` schema validation for worker messages.
 - [ ] **CLI Tool**: `create-causaloop-app` scaffolder for easy setup.

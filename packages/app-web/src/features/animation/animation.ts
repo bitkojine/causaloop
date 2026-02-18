@@ -6,6 +6,7 @@ import {
   Subscription,
   VNode,
   h,
+  UpdateContext,
 } from "@causaloop/core";
 export interface AnimationModel extends Model {
   readonly angle: number;
@@ -29,6 +30,7 @@ export const initialModel: AnimationModel = {
 export function update(
   model: AnimationModel,
   msg: AnimationMsg,
+  _ctx: UpdateContext,
 ): UpdateResult<AnimationModel> {
   switch (msg.kind) {
     case "animation_started":
