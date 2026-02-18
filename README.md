@@ -80,24 +80,27 @@ We don't just claim stability; we prove it. Causaloop is continuously benchmarke
 - **🔄 Session Restore**: Subscriptions automatically resume after replay, eliminating stuck "phantom pending" states.
 
 ---
- 
- ## 🎮 Featured Showcase: Causal Factory
- 
- **[Causal Factory](https://github.com/bitkojine/causal-factory)** is a high-performance industrial logistics simulation built to stress test Causaloop. 
- 
- It demonstrates:
- - **Massive Entity Scaling**: 100,000+ autonomous bots moving in a single tick.
- - **Complex Logistics**: Dynamic supply/demand re-routing and state transition bursts.
- - **The "Live-Link" Architecture**: A developer setup that hard-wires the game directly to the engine source for zero-build, instant-feedback development.
- 
- ### Quick One-Line Setup
- To clone the engine and the showcase game in the required sister-folder structure:
- ```bash
- git clone https://github.com/bitkojine/causal-factory.git causal-factory && git clone https://github.com/bitkojine/causaloop.git causaloop-repo && cd causaloop-repo && pnpm install && cd ../causal-factory && pnpm install && pnpm run dev
- ```
- 
- ---
- 
+
+## 🎮 Featured Showcase: Causal Factory
+
+**[Causal Factory](https://github.com/bitkojine/causal-factory)** is a high-performance industrial logistics simulation built to stress test Causaloop.
+
+It demonstrates:
+
+- **Massive Entity Scaling**: 100,000+ autonomous bots moving in a single tick.
+- **Complex Logistics**: Dynamic supply/demand re-routing and state transition bursts.
+- **The "Live-Link" Architecture**: A developer setup that hard-wires the game directly to the engine source for zero-build, instant-feedback development.
+
+### Quick One-Line Setup
+
+To clone the engine and the showcase game in the required sister-folder structure:
+
+```bash
+git clone https://github.com/bitkojine/causal-factory.git causal-factory && git clone https://github.com/bitkojine/causaloop.git causaloop-repo && cd causaloop-repo && pnpm install && cd ../causal-factory && pnpm install && pnpm run dev
+```
+
+---
+
 ## 🚀 Getting Started
 
 ### Prerequisites
