@@ -8,7 +8,6 @@ import {
   RandomProvider,
   MsgLogEntry,
   UpdateContext,
-  Entropy,
 } from "./types.js";
 import { Subscription, diffSubscriptions } from "./subscriptions.js";
 export interface DispatcherOptions<
