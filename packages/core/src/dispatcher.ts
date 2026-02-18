@@ -12,14 +12,17 @@ import {
 import { Subscription, diffSubscriptions } from "./subscriptions.js";
 
 export const __CAUSALOOP_DEV_IDENTITY__ = `
-    .##################.
-   .##                ##.
-   ##   .##########.   ##
-   ##   ##        ##   ##
-   ##   ##        ##   ##   CAUSALOOP
-   ##   '##########'   ##   CORE-ENGINE
-   '##.              .##'   [LIVE-SRC]
-    '##################'
+      ___           ___
+     /\\  \\         /\\  \\
+    /::\\  \\       /::\\  \\
+   /:/\\:\\  \\     /:/\\:\\  \\    CAUSALOOP
+  /:/  \\:\\  \\   /:/  \\:\\  \\   CORE-ENGINE
+ /:/__/ \\:\\__\\ /:/__/ \\:\\__\\  [LIVE-SRC]
+ \\:\\  \\ /:/  / \\:\\  \\ /:/  /
+  \\:\\  /:/  /   \\:\\  /:/  /
+   \\:\\/:/  /     \\:\\/:/  /
+    \\::/  /       \\::/  /
+     \\/__/         \\/__/
 `;
 
 export interface DispatcherOptions<
