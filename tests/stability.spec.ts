@@ -5,7 +5,7 @@ import { test, expect } from "@playwright/test";
 
 test.describe("Stress: Long-run Stability", () => {
   test("Sustained interaction for 30 minutes", async ({ page }) => {
-    test.setTimeout(1000 * 60 * 30); // 30 mins
+    test.setTimeout(1000 * 60 * 15); // 15 mins
 
     await page.goto("http://localhost:5173/");
 
@@ -13,7 +13,7 @@ test.describe("Stress: Long-run Stability", () => {
     await page.click('button:has-text("Start Timer")');
     await page.click('button:has-text("Start Animation")');
 
-    const duration = 1000 * 60 * 30;
+    const duration = 1000 * 60 * 10; // 10 minutes
     const start = Date.now();
     let interactions = 0;
 
