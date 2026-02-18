@@ -90,5 +90,5 @@ export function createDevTools<M extends Model, G extends Msg>(
   };
 
   const renderer = createSnabbdomRenderer(container, view);
-  dispatcher.subscribe((snapshot: M) => renderer.render(snapshot, () => { }));
+  dispatcher.subscribe((snapshot: M) => renderer.render(snapshot, () => {}));
 }
