@@ -174,29 +174,6 @@ try {
         log,
       });
 
-      if (restoredModel.worker.status === "computing") {
-        restoredModel = {
-          ...restoredModel,
-          worker: {
-            ...restoredModel.worker,
-            status: "idle",
-            error: null,
-          },
-        };
-      }
-      if (restoredModel.load.status === "loading") {
-        restoredModel = {
-          ...restoredModel,
-          load: { ...restoredModel.load, status: "idle", data: null },
-        };
-      }
-      if (restoredModel.search.status === "loading") {
-        restoredModel = {
-          ...restoredModel,
-          search: { ...restoredModel.search, status: "idle" },
-        };
-      }
-
       initialLog = log;
     } catch (e) {
       restoreError = e instanceof Error ? e.message : String(e);

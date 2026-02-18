@@ -4,7 +4,8 @@
 
 **"Torture Test: Replays complex async session identically"** - Implied guarantee of comprehensive replay testing
 
-**Where Expressed**: 
+**Where Expressed**:
+
 - `packages/core/src/stress/replay.test.ts` line 75: test name and description
 - Test claims to validate "complex async session" replay
 - 50 iterations with random message selection
@@ -12,12 +13,14 @@
 ## Enforcement Analysis
 
 **Enforcement**: Not enforced by test
+
 - Only uses `setTimeout` with fixed delays
 - Mock async behavior, not real async operations
 - No real network I/O or worker threads
 - No memory pressure or resource constraints
 
 **Code Evidence**:
+
 ```typescript
 it("Torture Test: Replays complex async session identically", async () => {
   const ITERATIONS = 50;
@@ -40,6 +43,7 @@ it("Torture Test: Replays complex async session identically", async () => {
 ## Mock/Test Double Insulation
 
 **Complete Insulation**:
+
 - Uses `setTimeout` instead of real async operations
 - No network calls, file I/O, or worker threads
 - No memory constraints or resource limits
@@ -47,6 +51,7 @@ it("Torture Test: Replays complex async session identically", async () => {
 - No concurrent async operations
 
 **What's NOT Tested**:
+
 - Real network timeouts and failures
 - Worker thread crashes and memory limits
 - Concurrent async operations
@@ -58,6 +63,7 @@ it("Torture Test: Replays complex async session identically", async () => {
 ## Falsification Strategies
 
 ### 1. Real Network Async Test
+
 ```typescript
 // Test replay with real network operations
 test("replay with real network async operations", async () => {
@@ -73,10 +79,10 @@ test("replay with real network async operations", async () => {
     }
     return { model, effects: [] };
   };
-  
+
   // Run session with real network calls
   await runNetworkSession(dispatcher, realNetwork);
-  
+
   // Replay should handle network timing differences
   const replayed = replay({ initialModel, update: networkUpdate, log });
   expect(replayed).toEqual(finalSnapshot);
@@ -84,37 +90,36 @@ test("replay with real network async operations", async () => {
 ```
 
 ### 2. Concurrent Async Operations Test
+
 ```typescript
 // Test replay with truly concurrent async operations
 test("replay with concurrent async operations", async () => {
   const concurrentUpdate = (model, msg) => {
     if (msg.kind === "CONCURRENT_FETCH") {
-      const effects = msg.urls.map(url => ({
+      const effects = msg.urls.map((url) => ({
         kind: "FETCH",
         url,
-        id: Math.random()
+        id: Math.random(),
       }));
       return { model, effects };
     }
     return { model, effects: [] };
   };
-  
+
   const effectRunner = async (effect, dispatch) => {
     // Real concurrent fetches
-    const results = await Promise.all(
-      effect.urls.map(url => realFetch(url))
-    );
+    const results = await Promise.all(effect.urls.map((url) => realFetch(url)));
     dispatch({ kind: "RESULTS", data: results });
   };
-  
+
   // Dispatch concurrent operations
-  dispatcher.dispatch({ 
-    kind: "CONCURRENT_FETCH", 
-    urls: [url1, url2, url3, url4, url5] 
+  dispatcher.dispatch({
+    kind: "CONCURRENT_FETCH",
+    urls: [url1, url2, url3, url4, url5],
   });
-  
+
   await waitForAllEffects();
-  
+
   // Replay should preserve concurrent behavior
   const replayed = replay({ initialModel, update: concurrentUpdate, log });
   expect(replayed).toEqual(finalSnapshot);
@@ -122,6 +127,7 @@ test("replay with concurrent async operations", async () => {
 ```
 
 ### 3. Memory Pressure During Replay Test
+
 ```typescript
 // Test replay under memory constraints
 test("replay under memory pressure", async () => {
@@ -129,28 +135,29 @@ test("replay under memory pressure", async () => {
     if (msg.kind === "ALLOCATE") {
       const largeData = new Array(1000000).fill(0).map(() => ({
         random: Math.random(),
-        nested: new Array(1000).fill(Math.random())
+        nested: new Array(1000).fill(Math.random()),
       }));
       return { model: { ...model, largeData }, effects: [] };
     }
     return { model, effects: [] };
   };
-  
+
   // Generate session with memory allocations
   for (let i = 0; i < 100; i++) {
     dispatcher.dispatch({ kind: "ALLOCATE" });
   }
-  
+
   // Replay under memory pressure
-  const memoryLimitedReplay = withMemoryLimit(() => 
-    replay({ initialModel, update: memoryHogUpdate, log })
+  const memoryLimitedReplay = withMemoryLimit(() =>
+    replay({ initialModel, update: memoryHogUpdate, log }),
   );
-  
+
   expect(memoryLimitedReplay).toEqual(finalSnapshot);
 });
 ```
 
 ### 4. Timer Precision Test
+
 ```typescript
 // Test replay with timer precision variations
 test("replay with timer precision variations", async () => {
@@ -158,16 +165,18 @@ test("replay with timer precision variations", async () => {
     if (msg.kind === "TIMER_START") {
       return {
         model,
-        effects: [{
-          kind: "TIMER",
-          delay: msg.delay,
-          precision: 'high'
-        }]
+        effects: [
+          {
+            kind: "TIMER",
+            delay: msg.delay,
+            precision: "high",
+          },
+        ],
       };
     }
     return { model, effects: [] };
   };
-  
+
   const effectRunner = (effect, dispatch) => {
     if (effect.kind === "TIMER") {
       // Use real timers with precision variations
@@ -175,10 +184,10 @@ test("replay with timer precision variations", async () => {
       setTimeout(() => dispatch({ kind: "TIMER_DONE" }), actualDelay);
     }
   };
-  
+
   // Run session with precision variations
   await runTimerSession(dispatcher);
-  
+
   // Replay should handle timing differences
   const replayed = replay({ initialModel, update: timerUpdate, log });
   expect(replayed).toEqual(finalSnapshot);
@@ -186,6 +195,7 @@ test("replay with timer precision variations", async () => {
 ```
 
 ### 5. Worker Thread Crash Test
+
 ```typescript
 // Test replay with worker thread failures
 test("replay with worker thread crashes", async () => {
@@ -193,41 +203,43 @@ test("replay with worker thread crashes", async () => {
     if (msg.kind === "HEAVY_COMPUTE") {
       return {
         model,
-        effects: [{
-          kind: "WORKER",
-          task: msg.task,
-          crashProbability: 0.1
-        }]
+        effects: [
+          {
+            kind: "WORKER",
+            task: msg.task,
+            crashProbability: 0.1,
+          },
+        ],
       };
     }
     return { model, effects: [] };
   };
-  
+
   const effectRunner = (effect, dispatch) => {
     if (effect.kind === "WORKER") {
-      const worker = new Worker('compute-worker.js');
-      
+      const worker = new Worker("compute-worker.js");
+
       worker.onmessage = (e) => {
         dispatch({ kind: "WORKER_RESULT", data: e.data });
       };
-      
+
       worker.onerror = (error) => {
         dispatch({ kind: "WORKER_ERROR", error });
       };
-      
+
       // Simulate random crashes
       if (Math.random() < effect.crashProbability) {
         worker.terminate();
         setTimeout(() => dispatch({ kind: "WORKER_CRASHED" }), 10);
       }
-      
+
       worker.postMessage(effect.task);
     }
   };
-  
+
   // Run session with potential worker crashes
   await runWorkerSession(dispatcher);
-  
+
   // Replay should handle crash differences
   const replayed = replay({ initialModel, update: workerUpdate, log });
   expect(replayed).toEqual(finalSnapshot);
@@ -235,6 +247,7 @@ test("replay with worker thread crashes", async () => {
 ```
 
 ### 6. Event Loop Interference Test
+
 ```typescript
 // Test replay with event loop interference
 test("replay with event loop interference", async () => {
@@ -247,20 +260,20 @@ test("replay with event loop interference", async () => {
     }
     return { model, effects: [] };
   };
-  
+
   // Interfere with event loop during session
   const eventLoopInterference = setInterval(() => {
     // Add event loop pressure
     const start = Date.now();
     while (Date.now() - start < 10) {}
   }, 5);
-  
+
   try {
     await runBlockingSession(dispatcher);
   } finally {
     clearInterval(eventLoopInterference);
   }
-  
+
   // Replay should be immune to event loop interference
   const replayed = replay({ initialModel, update: blockingUpdate, log });
   expect(replayed).toEqual(finalSnapshot);
@@ -271,12 +284,14 @@ test("replay with event loop interference", async () => {
 
 **Status**: Weakly Supported
 
-**Evidence**: 
+**Evidence**:
+
 - Test exists with multiple iterations
 - Random message selection
 - Some async behavior with setTimeout
 
 **Critical Flaws**:
+
 - No real async operations (network, workers, file I/O)
 - No resource constraints or memory pressure
 - Fixed timing patterns, not real-world chaos
