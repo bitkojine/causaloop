@@ -280,5 +280,21 @@ export function view(
             }),
           ),
     ]),
+    h("div", { class: { "footer-reset": true } }, [
+      "Ran into issues?",
+      h(
+        "a",
+        {
+          on: {
+            click: (e: Event) => {
+              e.preventDefault();
+              localStorage.removeItem("causaloop_log_v1");
+              window.location.reload();
+            },
+          },
+        },
+        ["Clear State & Reload"],
+      ),
+    ]),
   ]);
 }

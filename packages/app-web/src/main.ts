@@ -97,8 +97,7 @@ const throttle = (fn: (log: readonly MsgLogEntry[]) => void, wait: number) => {
 
 const saveLogThrottled = throttle((log: readonly MsgLogEntry[]) => {
   if (log.length > 0) {
-    const recentLog = log.slice(-1000);
-    localStorage.setItem("causaloop_log_v1", JSON.stringify(recentLog));
+    localStorage.setItem("causaloop_log_v1", JSON.stringify(log));
   }
 }, 1000);
 
