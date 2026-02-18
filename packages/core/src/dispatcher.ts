@@ -10,6 +10,17 @@ import {
   UpdateContext,
 } from "./types.js";
 import { Subscription, diffSubscriptions } from "./subscriptions.js";
+
+// LIVE-LINK VERIFICATION: Change this ASCII art to see the game react instantly!
+export const __CAUSALOOP_DEV_IDENTITY__ = `
+     ________
+    /  ____  \\
+   /  /    \\  \\
+  |  |      |  |  CAUSALOOP
+   \\  \\____/  /   CORE-ENGINE
+    \\________/
+`;
+
 export interface DispatcherOptions<
   M extends Model,
   G extends Msg,
