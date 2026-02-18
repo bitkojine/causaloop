@@ -68,7 +68,9 @@ export class BrowserRunner<TMsg extends Msg = Msg> {
           this.runWrapper(effect, dispatch);
           break;
       }
-    } catch (_err) {}
+    } catch (_err) {
+      void _err;
+    }
   }
   private runWrapper(
     effect: WrappedEffect<TMsg>,
