@@ -63,3 +63,15 @@ Adding subscriptions to `@causaloop/core` would:
 2. Align with Elm's architecture more faithfully
 3. Make replay/restore safe by default — the framework's core value proposition
 4. Position Causaloop as solving a problem that even Elm sidesteps rather than solves
+
+### Conditional subscription pausing
+
+The `subscriptions` function receives the current model, which enables conditionally starting or stopping subscriptions based on state. No consumer currently exercises this — causal-factory's `subscriptions` function ignores the model parameter entirely (always returns the same animationFrame subscription).
+
+Potential use cases:
+
+- Return an empty array when `model.isPaused === true` to pause the game loop
+- Start a countdown timer subscription only during a specific game phase
+- Switch from animationFrame to a slower timer when entity count exceeds a threshold
+
+The dispatcher already handles subscription diffing (`diffSubscriptions`) — adding/removing subscriptions between commits is fully supported. This just needs a real consumer to exercise it.
