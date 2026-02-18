@@ -1,5 +1,3 @@
-<div align="center">
-
 ```text
       ___           ___
      /\  \         /\  \
@@ -13,6 +11,8 @@
     \::/  /       \::/  /
      \/__/         \/__/
 ```
+
+<div align="center">
 
   <h1>Causaloop</h1>
   <p><strong>A production-grade TypeScript ecosystem for deterministic, effect-safe MVU applications.</strong></p>
