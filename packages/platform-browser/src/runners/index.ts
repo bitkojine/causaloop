@@ -68,9 +68,7 @@ export class BrowserRunner<TMsg extends Msg = Msg> {
           this.runWrapper(effect, dispatch);
           break;
       }
-    } catch (_err) {
-      // Critical error in effect runner silently ignored as per zero-console policy
-    }
+    } catch (_err) {}
   }
   private runWrapper(
     effect: WrappedEffect<TMsg>,

@@ -197,9 +197,7 @@ export function view<M extends Model>(
                     try {
                       const log = JSON.parse(content);
                       onReplay(log, currentModel);
-                    } catch (_err) {
-                      // Error ignored as per zero-console policy
-                    }
+                    } catch (_err) {}
                   };
                   reader.readAsText(file);
                 }
@@ -229,9 +227,7 @@ export function view<M extends Model>(
                 try {
                   const log = JSON.parse(saved);
                   onReplay(log, currentModel);
-                } catch (_e) {
-                  // Error ignored as per zero-console policy
-                }
+                } catch (_e) {}
               }
             },
           },

@@ -74,4 +74,15 @@ Potential use cases:
 - Start a countdown timer subscription only during a specific game phase
 - Switch from animationFrame to a slower timer when entity count exceeds a threshold
 
+- Switch from animationFrame to a slower timer when entity count exceeds a threshold
+
 The dispatcher already handles subscription diffing (`diffSubscriptions`) — adding/removing subscriptions between commits is fully supported. This just needs a real consumer to exercise it.
+
+## Zero Console Policy
+
+This repository implements a strict zero-console policy for all source code.
+
+- All `console.log`, `console.info`, and `console.error` calls are prohibited in `packages/*/src`.
+- This ensures that production logs are clean and prevents side-channel information leaks.
+- Error handling must be managed via the MVU pattern (dispatching error messages) or silent failures where appropriate, rather than simple console output.
+- Enforcement is handled via ESLint (`no-console: "error"`) and a pre-push regex check.
