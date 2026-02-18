@@ -14,14 +14,14 @@ export interface TimerModel extends Model {
 }
 export type TimerMsg =
   | {
-    kind: "timer_started";
-  }
+      kind: "timer_started";
+    }
   | {
-    kind: "timer_ticked";
-  }
+      kind: "timer_ticked";
+    }
   | {
-    kind: "timer_stopped";
-  };
+      kind: "timer_stopped";
+    };
 export const initialModel: TimerModel = {
   count: 0,
   isRunning: false,

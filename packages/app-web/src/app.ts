@@ -28,33 +28,33 @@ export interface AppModel extends Model {
 }
 export type AppMsg =
   | {
-    kind: "search";
-    msg: Search.SearchMsg;
-  }
+      kind: "search";
+      msg: Search.SearchMsg;
+    }
   | {
-    kind: "load";
-    msg: Load.LoadMsg;
-  }
+      kind: "load";
+      msg: Load.LoadMsg;
+    }
   | {
-    kind: "timer";
-    msg: Timer.TimerMsg;
-  }
+      kind: "timer";
+      msg: Timer.TimerMsg;
+    }
   | {
-    kind: "animation";
-    msg: Animation.AnimationMsg;
-  }
+      kind: "animation";
+      msg: Animation.AnimationMsg;
+    }
   | {
-    kind: "worker";
-    msg: WorkerFeature.WorkerMsg;
-  }
+      kind: "worker";
+      msg: WorkerFeature.WorkerMsg;
+    }
   | {
-    kind: "devtools";
-    msg: Devtools.DevtoolsMsg;
-  }
+      kind: "devtools";
+      msg: Devtools.DevtoolsMsg;
+    }
   | {
-    kind: "stress";
-    msg: Stress.StressMsg;
-  };
+      kind: "stress";
+      msg: Stress.StressMsg;
+    };
 const initialModelTimer = Timer.initialModel;
 export const initialModel: AppModel = {
   search: Search.initialModel,
@@ -266,37 +266,37 @@ export function view(
       errorLogs.length === 0
         ? h("p", { class: { "log-empty": true } }, ["No errors logged."])
         : h(
-          "ul",
-          {},
-          errorLogs.slice(-5).map((entry) => {
-            const m = entry.msg;
-            let kind = m.kind;
-            let error: unknown = "Unknown error";
-            if ("msg" in m && typeof m.msg === "object" && m.msg !== null) {
-              const inner = m.msg as {
-                kind: string;
-                error?: unknown;
-              };
-              kind = `${m.kind}/${inner.kind}`;
-              if (inner.error) error = inner.error;
-            } else if ("error" in m) {
-              error = (
-                m as {
-                  error: unknown;
-                }
-              ).error;
-            }
-            const errorMessage =
-              error instanceof Error
-                ? error.message
-                : typeof error === "string"
-                  ? error
-                  : JSON.stringify(error);
-            return h("li", { class: { "log-error": true } }, [
-              `${new Date(entry.ts).toLocaleTimeString()} - ${kind}: ${errorMessage}`,
-            ]);
-          }),
-        ),
+            "ul",
+            {},
+            errorLogs.slice(-5).map((entry) => {
+              const m = entry.msg;
+              let kind = m.kind;
+              let error: unknown = "Unknown error";
+              if ("msg" in m && typeof m.msg === "object" && m.msg !== null) {
+                const inner = m.msg as {
+                  kind: string;
+                  error?: unknown;
+                };
+                kind = `${m.kind}/${inner.kind}`;
+                if (inner.error) error = inner.error;
+              } else if ("error" in m) {
+                error = (
+                  m as {
+                    error: unknown;
+                  }
+                ).error;
+              }
+              const errorMessage =
+                error instanceof Error
+                  ? error.message
+                  : typeof error === "string"
+                    ? error
+                    : JSON.stringify(error);
+              return h("li", { class: { "log-error": true } }, [
+                `${new Date(entry.ts).toLocaleTimeString()} - ${kind}: ${errorMessage}`,
+              ]);
+            }),
+          ),
     ]),
     h("div", { class: { "footer-reset": true } }, [
       "Ran into issues?",

@@ -14,19 +14,19 @@ export interface LoadModel extends Model {
 }
 export type LoadMsg =
   | {
-    kind: "load_requested";
-  }
+      kind: "load_requested";
+    }
   | {
-    kind: "load_succeeded";
-    data: unknown;
-  }
+      kind: "load_succeeded";
+      data: unknown;
+    }
   | {
-    kind: "load_failed";
-    error: Error;
-  }
+      kind: "load_failed";
+      error: Error;
+    }
   | {
-    kind: "load_cancelled";
-  };
+      kind: "load_cancelled";
+    };
 export const initialModel: LoadModel = {
   status: "idle",
   data: null,

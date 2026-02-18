@@ -16,22 +16,22 @@ export interface WorkerModel extends Model {
 }
 export type WorkerMsg =
   | {
-    kind: "compute_requested";
-    n: number;
-  }
+      kind: "compute_requested";
+      n: number;
+    }
   | {
-    kind: "compute_succeeded";
-    result: number;
-    taskId: number;
-  }
+      kind: "compute_succeeded";
+      result: number;
+      taskId: number;
+    }
   | {
-    kind: "compute_failed";
-    error: Error;
-    taskId: number;
-  }
+      kind: "compute_failed";
+      error: Error;
+      taskId: number;
+    }
   | {
-    kind: "compute_reset";
-  };
+      kind: "compute_reset";
+    };
 export const initialModel: WorkerModel = {
   result: null,
   status: "idle",
@@ -139,17 +139,17 @@ export function view(
       ),
       snapshot.status === "computing" || snapshot.status === "error"
         ? h(
-          "button",
-          {
-            attrs: {
-              "aria-label": "Reset worker to idle state",
+            "button",
+            {
+              attrs: {
+                "aria-label": "Reset worker to idle state",
+              },
+              on: {
+                click: () => dispatch({ kind: "compute_reset" }),
+              },
             },
-            on: {
-              click: () => dispatch({ kind: "compute_reset" }),
-            },
-          },
-          [snapshot.status === "computing" ? "Cancel" : "Reset"],
-        )
+            [snapshot.status === "computing" ? "Cancel" : "Reset"],
+          )
         : h("span", {}, []),
     ]),
     h("p", {}, [
@@ -157,6 +157,5 @@ export function view(
       snapshot.result !== null ? ` | Result: ${snapshot.result}` : "",
       snapshot.error ? ` | Error: ${snapshot.error}` : "",
     ]),
-  ],
-  );
+  ]);
 }

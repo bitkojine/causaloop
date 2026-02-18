@@ -15,19 +15,19 @@ export interface SearchModel extends Model {
 }
 export type SearchMsg =
   | {
-    kind: "search_changed";
-    query: string;
-  }
+      kind: "search_changed";
+      query: string;
+    }
   | {
-    kind: "search_succeeded";
-    results: unknown;
-    requestId: number;
-  }
+      kind: "search_succeeded";
+      results: unknown;
+      requestId: number;
+    }
   | {
-    kind: "search_failed";
-    error: Error;
-    requestId: number;
-  };
+      kind: "search_failed";
+      error: Error;
+      requestId: number;
+    };
 export const initialModel: SearchModel = {
   query: "",
   status: "idle",
@@ -98,15 +98,15 @@ export function view(
   const resultsText =
     Array.isArray(snapshot.results) && snapshot.results.length > 0
       ? snapshot.results
-        .map(
-          (r: unknown) =>
-            (
-              r as {
-                title: string;
-              }
-            ).title,
-        )
-        .join("\n")
+          .map(
+            (r: unknown) =>
+              (
+                r as {
+                  title: string;
+                }
+              ).title,
+          )
+          .join("\n")
       : snapshot.status === "success"
         ? "No results found."
         : "";

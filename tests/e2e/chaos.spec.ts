@@ -15,7 +15,9 @@ test.describe("Adversarial User Interactions", () => {
 
     // 2. Type while searching and immediately 'Load Big Data'
     const searchInput = page.getByPlaceholder("Search posts...");
-    const loadBtn = page.getByRole("button", { name: "Load big data from API" });
+    const loadBtn = page.getByRole("button", {
+      name: "Load big data from API",
+    });
 
     await searchInput.fill("stress test");
     await loadBtn.click();
@@ -25,10 +27,14 @@ test.describe("Adversarial User Interactions", () => {
     await expect(
       page.locator("p:text-is('Load status: loading')"),
     ).toBeVisible();
-    await expect(page.getByText(/Search status: (loading|success)/)).toBeVisible();
+    await expect(
+      page.getByText(/Search status: (loading|success)/),
+    ).toBeVisible();
 
     // 3. Start Stress Mode (10k VDOM nodes) and scroll wildly
-    const startStress = page.getByRole("button", { name: "Start VDOM stress test" });
+    const startStress = page.getByRole("button", {
+      name: "Start VDOM stress test",
+    });
     await startStress.scrollIntoViewIfNeeded();
     await startStress.click();
 
@@ -53,7 +59,9 @@ test.describe("Adversarial User Interactions", () => {
 
   test("Browser behavior: offline simulation", async ({ page, context }) => {
     await page.goto("/");
-    const loadBtn = page.getByRole("button", { name: "Load big data from API" });
+    const loadBtn = page.getByRole("button", {
+      name: "Load big data from API",
+    });
 
     await context.setOffline(true);
     await loadBtn.click();

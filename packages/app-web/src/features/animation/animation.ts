@@ -14,15 +14,15 @@ export interface AnimationModel extends Model {
 }
 export type AnimationMsg =
   | {
-    kind: "animation_started";
-  }
+      kind: "animation_started";
+    }
   | {
-    kind: "animation_frame";
-    time: number;
-  }
+      kind: "animation_frame";
+      time: number;
+    }
   | {
-    kind: "animation_stopped";
-  };
+      kind: "animation_stopped";
+    };
 export const initialModel: AnimationModel = {
   angle: 0,
   isRunning: false,
