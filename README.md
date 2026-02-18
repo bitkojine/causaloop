@@ -1,5 +1,6 @@
 <div align="center">
-  <pre style="line-height: 1; font-size: 10px; color: #ffcc00; background: transparent; border: none;">
+
+```text
    ▄██████████████████▄
   ██▀▀     ▐██      ▀▀██
  ▐█▌       ▐██       ▐█▌
@@ -7,7 +8,8 @@
  ▐█▌  ██▀▀ ▐██ ▀▀██  ▐█▌ CORE-ENGINE
   ██▄▄     ▐██     ▄▄██  [LIVE-SRC]
    ▀██████████████████▀
-  </pre>
+```
+
   <h1>Causaloop</h1>
   <p><strong>A production-grade TypeScript ecosystem for deterministic, effect-safe MVU applications.</strong></p>
 
