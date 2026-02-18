@@ -12,13 +12,17 @@ import {
 import { Subscription, diffSubscriptions } from "./subscriptions.js";
 
 export const __CAUSALOOP_DEV_IDENTITY__ = `
-   ▄██████████████████▄
-  ██▀▀     ▐██      ▀▀██
- ▐█▌       ▐██       ▐█▌
- ▐█▌   ▄██████████▄  ▐█▌ CAUSALOOP
- ▐█▌  ██▀▀ ▐██ ▀▀██  ▐█▌ CORE-ENGINE
-  ██▄▄     ▐██     ▄▄██  [LIVE-SRC]
-   ▀██████████████████▀
+      ___           ___
+     /\\  \\         /\\  \\
+    /::\\  \\       /::\\  \\
+   /:/\\:\\  \\     /:/\\:\\  \\    CAUSALOOP
+  /:/  \\:\\  \\   /:/  \\:\\  \\   DETERMINISM = TRUE
+ /:/__/ \\:\\__\\ /:/__/ \\:\\__\\  ENTROPY = 0.0%
+ \\:\\  \\ /:/  / \\:\\  \\ /:/  /  [LIVE-SRC]
+  \\:\\  /:/  /   \\:\\  /:/  /
+   \\:\\/:/  /     \\:\\/:/  /
+    \\::/  /       \\::/  /
+     \\/__/         \\/__/
 `;
 
 export interface DispatcherOptions<

@@ -1,13 +1,19 @@
+```text
+      ___           ___
+     /\  \         /\  \
+    /::\  \       /::\  \
+   /:/\:\  \     /:/\:\  \    CAUSALOOP
+  /:/  \:\  \   /:/  \:\  \   DETERMINISM = TRUE
+ /:/__/ \:\__\ /:/__/ \:\__\  ENTROPY = 0.0%
+ \:\  \ /:/  / \:\  \ /:/  /  [LIVE-SRC]
+  \:\  /:/  /   \:\  /:/  /
+   \:\/:/  /     \:\/:/  /
+    \::/  /       \::/  /
+     \/__/         \/__/
+```
+
 <div align="center">
-  <pre style="line-height: 1; font-size: 10px; color: #ffcc00; background: transparent; border: none;">
-   ▄██████████████████▄
-  ██▀▀     ▐██      ▀▀██
- ▐█▌       ▐██       ▐█▌
- ▐█▌   ▄██████████▄  ▐█▌ CAUSALOOP
- ▐█▌  ██▀▀ ▐██ ▀▀██  ▐█▌ CORE-ENGINE
-  ██▄▄     ▐██     ▄▄██  [LIVE-SRC]
-   ▀██████████████████▀
-  </pre>
+
   <h1>Causaloop</h1>
   <p><strong>A production-grade TypeScript ecosystem for deterministic, effect-safe MVU applications.</strong></p>
 
