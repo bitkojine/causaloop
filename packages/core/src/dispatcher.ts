@@ -12,12 +12,13 @@ import {
 import { Subscription, diffSubscriptions } from "./subscriptions.js";
 
 export const __CAUSALOOP_DEV_IDENTITY__ = `
-     ________
-    /  ____  \\
-   /  /    \\  \\
-  |  |      |  |  CAUSALOOP
-   \\  \\____/  /   CORE-ENGINE
-    \\________/
+   ▄██████████████████▄
+  ██▀▀     ▐██      ▀▀██
+ ▐█▌       ▐██       ▐█▌
+ ▐█▌   ▄██████████▄  ▐█▌ CAUSALOOP
+ ▐█▌  ██▀▀ ▐██ ▀▀██  ▐█▌ CORE-ENGINE
+  ██▄▄     ▐██     ▄▄██  [LIVE-SRC]
+   ▀██████████████████▀
 `;
 
 export interface DispatcherOptions<
