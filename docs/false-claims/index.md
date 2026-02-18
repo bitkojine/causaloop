@@ -6,21 +6,25 @@ This index tracks all falsification-oriented claim audits performed on the causa
 
 | Classification | Count | Percentage |
 |----------------|-------|------------|
-| Likely True | 1 | 20% |
-| Weakly Supported | 2 | 40% |
-| Unverified | 1 | 20% |
-| Probably False | 1 | 20% |
-| Demonstrably False | 0 | 0% |
+| Likely True | 1 | 11% |
+| Weakly Supported | 3 | 33% |
+| Unverified | 2 | 22% |
+| Probably False | 2 | 22% |
+| Demonstrably False | 1 | 11% |
 
-**Total Claims Analyzed**: 5
+**Total Claims Analyzed**: 9
 
 ## Critical Risk Claims
 
 | ID | Claim | Classification | Risk Level | Primary Issue |
 |----|-------|----------------|-----------|---------------|
+| FC-008 | Session restore completeness | Demonstrably False | CRITICAL | Manual normalization incomplete, phantom pending states |
 | FC-004 | "verifyDeterminism()" validates determinism | Unverified | CRITICAL | False sense of security from method name |
+| FC-007 | Worker pool management efficiency | Unverified | HIGH | No performance benchmarks, untested efficiency |
 | FC-003 | "deepFreeze catches mutations" | Weakly Supported | HIGH | Multiple bypass vectors for mutations |
 | FC-001 | "DETERMINISM = TRUE" | Weakly Supported | HIGH | Effects not replayed, purity not enforced |
+| FC-009 | preventDefault guarantee | Probably False | MEDIUM | Only applies to renderer-managed forms |
+| FC-006 | "Stale-Safe Search" | Weakly Supported | MEDIUM | No integration tests for race conditions |
 | FC-005 | "Torture Test" for replay | Weakly Supported | MEDIUM | No real async operations or stress |
 | FC-002 | "Atomic Processing" eliminates race conditions | Likely True | LOW | Strong enforcement with minor caveats |
 
@@ -55,6 +59,30 @@ This index tracks all falsification-oriented claim audits performed on the causa
 - **Reality**: Basic async simulation with setTimeout
 - **Evidence**: No real network I/O, workers, memory pressure
 - **Falsification**: Real concurrent operations, resource constraints
+
+### FC-006: Stale-Safe Search
+- **Claim**: "Stale-Safe Search" prevents race conditions
+- **Reality**: Basic requestId validation, no integration testing
+- **Evidence**: AbortKey mechanism exists but not tested under load
+- **Falsification**: Rapid search changes, network timing variations
+
+### FC-007: Worker Pool Management
+- **Claim**: Worker pool improves performance with queue management
+- **Reality**: No performance benchmarks, untested efficiency
+- **Evidence**: Pool implementation exists but no proof of benefit
+- **Falsification**: Load testing, memory pressure, concurrent operations
+
+### FC-008: Session Restore Completeness
+- **Claim**: Manual session restore handles all in-flight states
+- **Reality**: Incomplete normalization leaves phantom pending states
+- **Evidence**: Missing timer, animation, stress normalization
+- **Falsification**: Subscription replay, new feature edge cases
+
+### FC-009: preventDefault Guarantee
+- **Claim**: Form submissions are automatically prevented
+- **Reality**: Only applies to renderer-managed submit events
+- **Evidence**: No protection for programmatic or dynamic forms
+- **Falsification**: Direct submission, event bypass, error scenarios
 
 ## Mock/Test Double Insulation Analysis
 
