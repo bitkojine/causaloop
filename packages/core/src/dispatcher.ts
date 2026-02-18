@@ -11,7 +11,6 @@ import {
 } from "./types.js";
 import { Subscription, diffSubscriptions } from "./subscriptions.js";
 
-// LIVE-LINK VERIFICATION: Change this ASCII art to see the game react instantly!
 export const __CAUSALOOP_DEV_IDENTITY__ = `
      ________
     /  ____  \\
