@@ -33,3 +33,18 @@ export interface MsgLogEntry {
   readonly ts: number;
   readonly entropy?: Entropy;
 }
+
+export interface DeterminismResult {
+  readonly isMatch: boolean;
+  readonly divergenceIndex?: number;
+  readonly originalSnapshot?: string;
+  readonly replayedSnapshot?: string;
+}
+
+export interface PerformanceMetrics {
+  readonly lastUpdateMs: number;
+  readonly avgUpdateMs: number;
+  readonly lastCommitMs: number;
+  readonly avgCommitMs: number;
+  readonly fps: number;
+}

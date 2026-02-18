@@ -53,7 +53,12 @@ export interface Dispatcher<M extends Model, G extends Msg> {
   subscribe(callback: (snapshot: Snapshot<M>) => void): () => void;
   shutdown(): void;
   getMsgLog(): readonly MsgLogEntry[];
+  verifyDeterminism(): DeterminismResult;
+  getMetrics(): PerformanceMetrics;
 }
+import { replay } from "./replay.js";
+import { DeterminismResult, PerformanceMetrics } from "./types.js";
+
 export function createDispatcher<
   M extends Model,
   G extends Msg,
@@ -71,6 +76,14 @@ export function createDispatcher<
   const time = options.timeProvider || { now: () => Date.now() };
   const maxLogSize = options.maxLogSize ?? 10000;
   let activeSubs: readonly Subscription<G>[] = [];
+
+  // Performance Tracking
+  let lastUpdateTs = 0;
+  let updateHistory: number[] = [];
+  let commitHistory: number[] = [];
+  let lastCommitTime = time.now();
+  let fpsHistory: number[] = [];
+
   const deepFreeze = (obj: unknown): unknown => {
     if (
       options.devMode &&
@@ -104,8 +117,20 @@ export function createDispatcher<
       if (isShutdown) return;
       pendingNotify = false;
       const snapshot = currentModel as Snapshot<M>;
+
+      const start = time.now();
       options.onCommit?.(snapshot);
       subscribers.forEach((cb) => cb(snapshot));
+      const end = time.now();
+
+      commitHistory.push(end - start);
+      if (commitHistory.length > 60) commitHistory.shift();
+
+      const fps = 1000 / (end - lastCommitTime);
+      fpsHistory.push(fps);
+      if (fpsHistory.length > 60) fpsHistory.shift();
+      lastCommitTime = end;
+
       reconcileSubscriptions();
     });
   };
@@ -129,11 +154,15 @@ export function createDispatcher<
           now: () => ts,
         };
 
+        const updateStart = time.now();
         const { model: nextModel, effects } = options.update(
           currentModel,
           msg,
           ctx,
         );
+        const updateEnd = time.now();
+        updateHistory.push(updateEnd - updateStart);
+        if (updateHistory.length > 60) updateHistory.shift();
 
         msgLog.push({
           msg,
@@ -190,5 +219,33 @@ export function createDispatcher<
       queue.length = 0;
     },
     getMsgLog: () => msgLog,
+    verifyDeterminism: () => {
+      const replayed = replay({
+        initialModel: options.model,
+        update: options.update,
+        log: msgLog,
+      });
+
+      const originalJson = JSON.stringify(currentModel);
+      const replayedJson = JSON.stringify(replayed);
+      const isMatch = originalJson === replayedJson;
+
+      return {
+        isMatch,
+        originalSnapshot: originalJson,
+        replayedSnapshot: replayedJson,
+      };
+    },
+    getMetrics: () => {
+      const avg = (arr: number[]) =>
+        arr.length > 0 ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
+      return {
+        lastUpdateMs: updateHistory[updateHistory.length - 1] || 0,
+        avgUpdateMs: avg(updateHistory),
+        lastCommitMs: commitHistory[commitHistory.length - 1] || 0,
+        avgCommitMs: avg(commitHistory),
+        fps: Math.round(avg(fpsHistory)),
+      };
+    },
   };
 }
